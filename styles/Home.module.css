@@ -1,0 +1,79 @@
+
+.background_banner{
+    width: 100%;
+    height: 302px;
+    z-index: -100;
+    justify-content: center;
+    align-items: center;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    z-index: -100;
+    border-bottom: 8px solid #FFFFFF;
+    border-top: 8px solid #FFFFFF;
+    background-image: url("/blue_bg_large.jpg");
+    background-repeat: no-repeat;
+    /*background-attachment: fixed;*/
+    background-attachment: scroll;
+}
+
+.small_banner{
+    width: 100%;
+    z-index: -100;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    border-bottom: 5px solid #FFFFFF;
+    border-top: 5px solid #FFFFFF;
+    padding: 0;
+    background-color: #222222;
+    background-position: top center;
+    background-attachment: scroll;
+    background-size: cover;
+    position: absolute;
+}
+
+.upper_banner{
+    top: 0;
+    left: 0;
+    background-color: #364990;
+    background-position: top left;
+    position: absolute;
+}
+
+.upper_banner_container{
+    width: 100%;
+    margin-top: 65px;
+    min-height: calc(302px - 65px);
+    position: relative;
+}
+.small_banner_container{
+    width: 100%;
+    padding-top: 17px;
+    position: relative;
+    min-height: calc(139px - 17px);
+}
+
+.bottom_link_container{
+    font-size: 20pt;
+    cursor: pointer;
+    margin: 15px;
+    padding: 30px;
+}
+.bottom_link{
+    margin-right: 10px;
+    transition: margin-right 120ms ease-in-out, 
+}
+.bottom_link_container:hover .bottom_link{
+    margin-right: 23px;
+}
+
+@media (max-width: 1100px){
+    .small_banner{
+        background-size: auto;
+    }
+}
+
+@media (max-width: 600px){
+    .upper_banner{
+        background-position: top center;
+    }
+}

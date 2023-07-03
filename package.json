@@ -12,9 +12,13 @@
     "@types/node": "20.3.1",
     "@types/react": "18.2.12",
     "@types/react-dom": "18.2.5",
+    "mysql2": "^3.3.5",
+    "net": "^1.0.2",
     "next": "13.4.6",
+    "next-auth": "^4.22.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "tls": "^0.0.1",
     "typescript": "5.1.3"
   }
 }
