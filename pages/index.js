@@ -4,6 +4,8 @@ import Link from "next/link";
 import pagestyles from "styles/Home.module.css";
 import styles from "styles/Main.module.css";
 import Footer from "comps/Footer.js";
+import { recommended } from "lib/themes";
+import { getTheme } from "lib/theme_utils";
 
 import { useState } from "react";
 
@@ -58,8 +60,23 @@ export default function Index(){
                 </div>
                 <center>
                     <div style={{width: "75%"}}>
-                        <div className={styles.rounded_box} style={{height: "250px", marginTop: "60px", marginBottom: "60px"}}>
+                        <div className={styles.rounded_box} style={{minHeight: "250px", marginTop: "60px", marginBottom: "60px"}}>
                             <span>Featured Themes</span>
+                            <div className={styles.flexbox + " " + styles.centered}>
+                                {recommended.slice(0, 4).map((id, i) => {
+                                    const theme = getTheme(id);
+                                    if (theme.error_msg != undefined) return (<></>);
+                                    if (theme.name == "Underwater Coral Reef") theme.name = "Coral Reef";
+                                    else return (
+                                    <div key={"recommended-theme-" + i} className={styles.theme_icon_container + (i >= 3 ? " " + styles.hide_on_mobile : "")}>
+                                        <Link href={"/" + theme.slug}>
+                                            <div className={styles.theme_icon} style={{backgroundImage: "url(\"/themes/" + theme.slug + ".png\")"}}></div>
+                                            <div style={{maxWidth: "200px", minHeight: "50px"}}>{theme.name}</div>
+                                        </Link>
+                                    </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                     <div style={{position: "relative"}}>
@@ -74,15 +91,18 @@ export default function Index(){
                         </div>
                     </div>
                     <div style={{width: "75%"}}>
-                        <div className={styles.rounded_box} style={{minHeight: "200px", marginTop: "60px"}}>
-                            {false && (<div style={{fontSize: "20pt"}}><span><b>Stand out with a themed QR Code</b></span></div>)}
-                            <p>Personalize your QR Codes to engage your customers with the power of Artificial Intelligence!
-                                QR-Theme provides the best AI settings and automatically generates the image for you!
+                        <div className={styles.rounded_box} style={{minHeight: "200px", marginTop: "60px", fontSize: "18pt"}}>
+                            {false && (<div style={{fontSize: "22pt"}}><span><b>Stand out with a themed QR Code</b></span></div>)}
+                            <p style={{marginBottom: "50px"}}>Personalize your QR Codes to engage your customers with the power of Artificial Intelligence!
+                                QR-Theme lets you generate amazing QR Codes in minutes!
+                            </p>
+                            <p style={{marginBottom: "50px"}}>
+                                Installing AI software is time-consuming and requires high amounts of storage and computational power.
+                                We made QR-Theme so that you can create QR Codes with the the best AI settings and increased scannability,
+                                with no software installation required.
                             </p>
                             <p>
-                                QR-Theme integrates the design into the shape of the QR Code. For example, in<Link style={{color: "#0f88e4"}} target="_blank" href="/flower-vase"> this</Link> QR code, the flowers
-                                form the shape of the encoded information. This is a step above other AI models, which only put black boxes
-                                over the image.
+                                Use QR-Theme to create stunning visual QR Codes without the hassle!
                             </p>
                         </div>
                         <div className={pagestyles.bottom_link_container}>

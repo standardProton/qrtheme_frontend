@@ -7,7 +7,6 @@ import { signIn, signOut } from "next-auth/react";
 //#0f9afe
 
 export default function MenuBar({mobile, user}){
-    console.log("menu signed in = " + (user != null));
     const menulinks = [
         {url: "/themes", text: "Explore Themes", action: 0},
         {url: "/about", text: "How it Works", action: 0},

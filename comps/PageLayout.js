@@ -6,8 +6,6 @@ import Footer from "comps/Footer.js";
 
 export default function PageContainer({title, description, user, children}){
 
-    console.log("layout user: " + JSON.stringify(user));
-
     const [menubar, setMenuBar] = useState(<MenuBar user={user} mobile={0}></MenuBar>);
     const [small_menubar, setMenuBarSize] = useState(false);
     function updateMenu(){
