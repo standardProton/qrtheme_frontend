@@ -14,6 +14,7 @@ import { getEmailUser } from "lib/auth_utils";
 import { useRouter } from "next/router";
 import {signIn} from "next-auth/react";
 import { authOptions } from "pages/api/auth/[...nextauth].js";
+import ThemeIcon from "comps/ThemeIcon";
 
 loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -193,13 +194,7 @@ export default function ThemePreview({context, user}){
                         <div className={styles.flexbox + " " + styles.centered}>
                             <>
                             {related_themes.map((rth, i) => (
-                                <div key={"related-theme-" + i} className={styles.theme_icon_container + (i > 4 ? " " + styles.hide_on_mobile : "")}>
-                                    <Link href={"/" + rth.slug}>
-                                        <div className={styles.theme_icon} style={{backgroundImage: "url(\"/themes/" + rth.slug + ".png\")"}}>
-                                        </div>
-                                        <div style={{maxWidth: "200px", minHeight: "50px"}}>{rth.name}</div>
-                                    </Link>
-                                </div>
+                                <ThemeIcon key={"related-theme-" + i} theme={rth} style={i > 4 ? styles.hide_on_mobile : ""}></ThemeIcon>
                             ))}
                             </>
                         </div>

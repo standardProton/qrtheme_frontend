@@ -6,6 +6,7 @@ import styles from "styles/Main.module.css";
 import Footer from "comps/Footer.js";
 import { recommended } from "lib/themes";
 import { getTheme } from "lib/theme_utils";
+import ThemeIcon from "comps/ThemeIcon";
 
 import { useState } from "react";
 
@@ -67,13 +68,8 @@ export default function Index(){
                                     const theme = getTheme(id);
                                     if (theme.error_msg != undefined) return (<></>);
                                     if (theme.name == "Underwater Coral Reef") theme.name = "Coral Reef";
-                                    else return (
-                                    <div key={"recommended-theme-" + i} className={styles.theme_icon_container + (i >= 3 ? " " + styles.hide_on_mobile : "")}>
-                                        <Link href={"/" + theme.slug}>
-                                            <div className={styles.theme_icon} style={{backgroundImage: "url(\"/themes/" + theme.slug + ".png\")"}}></div>
-                                            <div style={{maxWidth: "200px", minHeight: "50px"}}>{theme.name}</div>
-                                        </Link>
-                                    </div>
+                                    return (
+                                    <ThemeIcon key={"recommended-theme-" + i} theme={theme}></ThemeIcon>
                                     );
                                 })}
                             </div>

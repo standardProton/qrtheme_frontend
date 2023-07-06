@@ -7,7 +7,7 @@ export default function ThemeIcon({theme, i}){
     return (
         <div key={"related-theme-" + theme.slug + Math.random()} className={styles.theme_icon_container + (i > 4 ? " " + styles.hide_on_mobile : "")}>
             <Link href={"/" + theme.slug}>
-                <div className={styles.theme_icon} style={{backgroundImage: "url(\"/themes/" + theme.slug + ".png\")"}}>
+                <div className={styles.theme_icon} style={{backgroundImage: "url(\"/thumbnails/" + theme.slug + ".png\")"}}>
                 </div>
                 <div style={{maxWidth: "200px", minHeight: "50px"}}>{theme.name}</div>
             </Link>
