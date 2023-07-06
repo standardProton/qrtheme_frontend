@@ -47,9 +47,9 @@ export async function getServerSideProps(context){
         if (user != null && user.banned){
             return {props: {context: {error404: false, error_msg: "You are banned!"}}}
         }
+        con.end();
     }
 
-    con.end();
 
     return {props: {context: {theme: themedata, related_themes}, user}}
 }
@@ -72,7 +72,7 @@ export default function ThemePreview({context, user}){
             setPageSetup(true);
             const url_input = document.getElementById("url-input");
             if (url_input != null){
-                url_input.addEventListener("input", (input) => {
+                url_input.addEventListener("input", () => {
                     if (url_input.value.length >= 60){
                         setQRError("This URL is too long! Use a link shortener");
                         return;

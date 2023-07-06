@@ -9,7 +9,7 @@ import { signIn, signOut } from "next-auth/react";
 export default function MenuBar({mobile, user}){
     const menulinks = [
         {url: "/themes", text: "Explore Themes", action: 0},
-        {url: "/about", text: "How it Works", action: 0},
+        {url: "/", text: "Why QR Theme?", action: 0},
         user == null ? {url: "/login", text: "Log In", action: 1} : {url: "/login", text: "Log Out", action: 2}
     ];
 
