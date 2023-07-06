@@ -18,7 +18,6 @@ import { authOptions } from "pages/api/auth/[...nextauth].js";
 loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 export async function getServerSideProps(context){
-    const start = (new Date()).getTime();
     if (context == undefined || context.query == undefined || context.query.theme == undefined){
         return {props: {context: {error404: true, error_msg: "'Theme' parameter is undefined!"}}}
     }

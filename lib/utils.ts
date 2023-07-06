@@ -16,7 +16,7 @@ export function getId(pid: string){
 export async function getConnection(){
 
     return new Promise(async (resolve, reject) => {
-        setTimeout(reject, 4000);
+        setTimeout(reject, 2000);
         const params = {
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
@@ -50,7 +50,8 @@ export async function mysqlQuery(con: object, sql: string, values: string[]){
 
     if (con == undefined || typeof con == "string") return {error_msg: "Invalid connection type!", results: []}
     
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
+        setTimeout(reject, 2000)
         try{
             /*const con = await mysql.createConnection({
                 host: process.env.DB_HOST,
