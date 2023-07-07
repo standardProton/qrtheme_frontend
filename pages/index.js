@@ -43,7 +43,7 @@ export default function Index(){
         <>
             <Head>
                 <link rel="icon" href="/favicon.png"></link>
-                <title>Make Incredible AI-Generated QR Code Art | QR Scene</title>
+                <title>Make Incredible QR Code Art with AI | QR Theme</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="description" content="Get a unique AI QR Code for your business, event, profile, and more! Stand out to customers with a Scannable AI QR code."></meta>
                 <meta name="og:image" content="/logo.png"></meta>

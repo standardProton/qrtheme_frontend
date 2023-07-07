@@ -9,6 +9,9 @@ const nextConfig = {
     
         return config;
     },
+    images: {
+      domains: ["qr-theme-image.s3.us-east-2.amazonaws.com"]
+    }
 }
 
 module.exports = nextConfig
