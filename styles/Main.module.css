@@ -12,6 +12,10 @@
     box-shadow: 0 4px 6px 0 rgba(0, 0, 0, 0.2), 0 4px 6px 0 rgba(0, 0, 0, 0.19);
 }
 
+.content_width{
+    width: 75%;
+}
+
 .header_bg{
     background-color: #202024;
 }
@@ -136,6 +140,7 @@
     background-color: #3080e1; /*#426ed5*/
     margin: 8px;
     background-size: cover;
+    overflow: hidden;
 }
 
 .theme_icon_container{
@@ -260,5 +265,8 @@
     }
     .hide_on_mobile{
         display: none;
+    }
+    .content_width{
+        width: 90%;
     }
 }

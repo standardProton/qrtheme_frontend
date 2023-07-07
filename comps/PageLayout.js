@@ -44,7 +44,7 @@ export default function PageContainer({title, description, user, children}){
                 {menubar}
                 <div className={styles.content_container}>
                     <center>
-                        <div style={{width: "75%"}}>
+                        <div className={styles.content_width}>
                             {children}
                         </div>
                     </center>
