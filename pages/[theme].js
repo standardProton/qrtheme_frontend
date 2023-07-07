@@ -60,7 +60,7 @@ export default function ThemePreview({context, user}){
     const [size, setSize] = useState(1);
     const [qr_url_error, setQRError] = useState(null);
     const [page_setup, setPageSetup] = useState(false);
-    const [image_size, setImageSize] = useState(600);
+    const [image_size, setImageSize] = useState(100);
 
     const small_price = 2.99;
     const med_price = 5.99;
@@ -69,40 +69,55 @@ export default function ThemePreview({context, user}){
     const router = useRouter();
 	const { payment_success, payment_cancelled } = router.query;
 
+    const resize = () => {
+        const pixels = Math.trunc(Math.min(window.innerWidth * ((window.innerWidth >= 1075 && window.innerWidth <= 1400) ? 0.4 : 0.5), 600));
+       /* qr.style.width = pixels + "px";
+        qr.style.height = pixels + "px";
+        qr_image.width = pixels;
+        qr_image.height = pixels;*/
+        setImageSize(pixels);
+        console.log("pixels = " + pixels);
+    }
+
     useEffect(() => {
-        if (context != undefined && !page_setup){
-            setPageSetup(true);
-            const url_input = document.getElementById("url-input");
-            if (url_input != null){
-                url_input.addEventListener("input", () => {
-                    if (url_input.value.length >= 60){
-                        setQRError("This URL is too long! Use a link shortener");
-                        return;
-                    }else{
-                        setQRError(null);
-                    }
-                })
-            }
-
-            if (payment_success){
-                alert("Order placed!");
-            }
-
-            const qr = document.getElementById("qr-preview");
-            const qr_image = document.getElementById("preview-image");
-            const resize = (qr) => {
-                const pixels = Math.trunc(Math.min(window.innerWidth * ((window.innerWidth >= 1075 && window.innerWidth <= 1400) ? 0.4 : 0.5), 600));
-               /* qr.style.width = pixels + "px";
-                qr.style.height = pixels + "px";
-                qr_image.width = pixels;
-                qr_image.height = pixels;*/
-                setImageSize(pixels);
-            }
-            if (qr != null){
-                window.addEventListener("resize", () => resize(qr));
-                resize(qr);
-            }
+        const resize = () => {
+            const pixels = Math.trunc(Math.min(window.innerWidth * ((window.innerWidth >= 1075 && window.innerWidth <= 1400) ? 0.4 : 0.55), 600));
+           /* qr.style.width = pixels + "px";
+            qr.style.height = pixels + "px";
+            qr_image.width = pixels;
+            qr_image.height = pixels;*/
+            setImageSize(pixels);
         }
+        if (context != undefined){
+            if (!page_setup){
+                setPageSetup(true);
+                const url_input = document.getElementById("url-input");
+                if (url_input != null){
+                    url_input.addEventListener("input", () => {
+                        if (url_input.value.length >= 60){
+                            setQRError("This URL is too long! Use a link shortener");
+                            return;
+                        }else{
+                            setQRError(null);
+                        }
+                    })
+                }
+
+                if (payment_success){
+                    alert("Order placed!");
+                }
+
+                //const qr = document.getElementById("qr-preview");
+                //const qr_image = document.getElementById("preview-image");
+                if (window != null){
+                    window.addEventListener("resize", () => resize());
+                    resize();
+                }
+            }
+            resize();
+        }
+        
+        
     }, [payment_success])
 
     async function createOrder(user){
@@ -156,7 +171,9 @@ export default function ThemePreview({context, user}){
                         <div className={styles.rounded_box + " " + styles.main_panel}>
                             <div className={styles.qr_preview} id="qr-preview" style={{width: image_size + "px", height: image_size + "px"}}>
                                 {/*style={{backgroundImage: "url(\"/themes/" + theme.slug + ".png\")"}}*/}
-                                <Image src={"/themes/" + theme.slug + ".png"} id="preview-image" width={image_size} height={image_size} alt={theme.name + " QR Code"}></Image>
+                                <Image src={"/themes/" + theme.slug + ".png"} id="preview-image" 
+                                width={image_size} height={image_size} alt={theme.name + " QR Code"}
+                                placeholder="blur" blurDataURL={"/thumbnails/" + theme.slug + ".png"}></Image>
                             </div>
                         </div>
                         <div className={styles.rounded_box + " " + styles.side_panel}>

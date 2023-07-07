@@ -8,7 +8,7 @@ import { recommended } from "lib/themes";
 import { getTheme } from "lib/theme_utils";
 import ThemeIcon from "comps/ThemeIcon";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 /*export function getServerSideProps(context){
     return {
@@ -22,8 +22,7 @@ import { useState } from "react";
 
 export default function Index(){
 
-
-    useState(() => {
+    useEffect(() => {
         if (typeof window == "undefined") return;
 
         var b1 = document.getElementById("banner-1")
