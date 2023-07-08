@@ -63,15 +63,16 @@ export async function getServerSideProps(context){
         con.end();
     }
 
-    return {props: {context: {theme: themedata, related_themes, orders}, user}}
+    return {props: {context: {theme: themedata, related_themes}, user, orders}}
 }
 
-export default function ThemePreview({context, user}){
+export default function ThemePreview({context, user, orders}){
 
     const [size, setSize] = useState(1);
     const [qr_url_error, setQRError] = useState(null);
     const [page_setup, setPageSetup] = useState(false);
     const [image_size, setImageSize] = useState(100);
+    //const [orders, setOrders] = useState(null);
 
     const small_price = 2.99;
     const med_price = 5.99;
@@ -88,6 +89,7 @@ export default function ThemePreview({context, user}){
         if (context != undefined){
             if (!page_setup){
                 setPageSetup(true);
+                //setOrders(orders_init);
                 const url_input = document.getElementById("url-input");
                 if (url_input != null){
                     url_input.addEventListener("input", () => {
@@ -207,16 +209,16 @@ export default function ThemePreview({context, user}){
                         
                     </div>
                 </div>
-                {(context.orders != undefined && context.orders.length > 0) && (
+                {(orders != null && orders.length > 0) && (
                     <div className={styles.rounded_box}>
                         <span>Your Images:</span>
-                        <OrderResult order={context.orders[0]} i={0} size={image_size}></OrderResult>
+                        <OrderResult order={orders[0]} i={0} size={image_size}></OrderResult>
                     </div>
                 )}
-                {(context.orders != undefined && context.orders.length > 1) && (
+                {(orders != undefined && orders.length > 1) && (
                     <div className={styles.rounded_box}>
                         <span>Past Orders:</span>
-                        {context.orders.map((order, i) => {
+                        {orders.map((order, i) => {
                             if (i == 0) return (<></>);
                             else return (
                                 <OrderResult key={"past-order-" + i} order={order} i={i}></OrderResult>

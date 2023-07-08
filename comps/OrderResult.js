@@ -48,8 +48,20 @@ export default function OrderResult({order, i, size}){
                 </>) :
                 (<div key={"image-downlaod-view-" + view_index}>
                     <div style={{marginTop: "15px"}}>
+                        <div className={styles.flexbox + " " + styles.centered}>
+                            <div style={{marginRight: "15px"}}>
+                                <ImageScroll src_list={src_list} width={size} height={size} starting_index={view_index} alt={"QR Theme Image Download"} view_index={view_index} setViewIndex={setViewIndex}></ImageScroll>
+                                <center style={{margin: "20px"}}>
+                                    <Link href={src_list[view_index]}>
+                                        <div className={styles.styled_button + " " + styles.gray_button} style={{width: "300px"}}>
+                                            <Image src="/icons/download.png" height="23" width="23" alt="Download"></Image>
+                                            <span style={{marginLeft: "10px", fontSize: "18pt"}}>Download</span>
+                                        </div>
+                                    </Link>
+                                </center>
+                            </div>
+                        </div>
                         <center>
-                            <ImageScroll src_list={src_list} width={size} height={size} starting_index={view_index} alt={"QR Theme Image Download"} view_index={view_index} setViewIndex={setViewIndex}></ImageScroll>
                             <div style={{cursor: "pointer", marginTop: "15px"}} onClick={() => setViewIndex(-1)}>View All</div>
                         </center>
                     </div>

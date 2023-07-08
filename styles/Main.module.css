@@ -248,6 +248,12 @@
 .blue_button:hover{
     background-color: #0f88e4; /*#1ac71a;*/
 }
+.gray_button{
+    background-color: #484750;
+}
+.gray_button:hover{
+    background-color: #46444e;
+}
 
 @media (max-width: 1075px){
     .main_panel{
