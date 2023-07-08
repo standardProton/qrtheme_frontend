@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { loadStripe } from '@stripe/stripe-js';
 import Error404 from "comps/Error404.js";
-import {shuffleArray, getConnection } from "lib/utils.ts";
+import {shuffleArray, getConnection, mysqlQuery } from "lib/utils.ts";
 import { relatedThemes, getThemeSlug, createThemesList } from "lib/theme_utils";
 import ErrorPage from "comps/ErrorPage";
 import { useState, useEffect } from "react";
@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 import {signIn} from "next-auth/react";
 import { authOptions } from "pages/api/auth/[...nextauth].js";
 import ThemeIcon from "comps/ThemeIcon";
+import OrderResult from "comps/OrderResult";
 
 loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -43,16 +44,26 @@ export async function getServerSideProps(context){
     //if (con == null) return {props: {context: {error404: false, error_msg: "Could not connect to the server!"}}}
     
     var user = null;
+    var orders = [];
     if (con != null) {
         user = await getEmailUser(session, con);
-        if (user != null && user.banned){
-            return {props: {context: {error404: false, error_msg: "You are banned!"}}}
+        if (user != null){
+            if (user.banned) return {props: {context: {error404: false, error_msg: "You are banned!"}}}
+
+            const order_res = await mysqlQuery(con, "SELECT id, output, qr_url FROM orders WHERE owner = ? AND theme_id = ?", [user.id, themedata.id]);
+            if (order_res != null && order_res.error_msg == null){
+                const images = order_res.results;
+                for (let i = 0; i < images.length; i++){
+                    orders.push({order_id: images[i].id, qr_url: images[i].qr_url, images: images[i].output.split(" ").filter(name => name.length > 0)});
+                }
+            }
+
         }
+
         con.end();
     }
 
-
-    return {props: {context: {theme: themedata, related_themes}, user}}
+    return {props: {context: {theme: themedata, related_themes, orders}, user}}
 }
 
 export default function ThemePreview({context, user}){
@@ -69,23 +80,9 @@ export default function ThemePreview({context, user}){
     const router = useRouter();
 	const { payment_success, payment_cancelled } = router.query;
 
-    const resize = () => {
-        const pixels = Math.trunc(Math.min(window.innerWidth * ((window.innerWidth >= 1075 && window.innerWidth <= 1400) ? 0.4 : 0.5), 600));
-       /* qr.style.width = pixels + "px";
-        qr.style.height = pixels + "px";
-        qr_image.width = pixels;
-        qr_image.height = pixels;*/
-        setImageSize(pixels);
-        console.log("pixels = " + pixels);
-    }
-
     useEffect(() => {
         const resize = () => {
             const pixels = Math.trunc(Math.min(window.innerWidth * ((window.innerWidth >= 1075 && window.innerWidth <= 1400) ? 0.4 : 0.55), 600));
-           /* qr.style.width = pixels + "px";
-            qr.style.height = pixels + "px";
-            qr_image.width = pixels;
-            qr_image.height = pixels;*/
             setImageSize(pixels);
         }
         if (context != undefined){
@@ -116,8 +113,6 @@ export default function ThemePreview({context, user}){
             }
             resize();
         }
-        
-        
     }, [payment_success])
 
     async function createOrder(user){
@@ -152,81 +147,96 @@ export default function ThemePreview({context, user}){
         console.log(j);
     }
 
-    if (context == undefined){
-        return (<></>); //TODO
-    } else {
+    if (context == undefined) return (<></>); //TODO
+    
 
-        if (context.error_msg != undefined){
-            if (context.error404 != undefined && context.error404) return (<Error404></Error404>)
-            else return (<ErrorPage msg={context.error_msg}></ErrorPage>);
-        }
-
-        const theme = context.theme;
-        const related_themes = context.related_themes
-
-        return (
-            <PageLayout title={theme.name + " QR Codes | Generate AI QR Codes | QR Theme"} user={user}>
-                <center>
-                    <div className={styles.flexbox} style={{width: "100%", height: "100%"}}>
-                        <div className={styles.rounded_box + " " + styles.main_panel}>
-                            <div className={styles.qr_preview} id="qr-preview" style={{width: image_size + "px", height: image_size + "px"}}>
-                                {/*style={{backgroundImage: "url(\"/themes/" + theme.slug + ".png\")"}}*/}
-                                <Image src={"/themes/" + theme.slug + ".png"} id="preview-image" 
-                                width={image_size} height={image_size} alt={theme.name + " QR Code"}
-                                placeholder="blur" blurDataURL={"/thumbnails/" + theme.slug + ".png"}></Image>
-                            </div>
-                        </div>
-                        <div className={styles.rounded_box + " " + styles.side_panel}>
-                            <div><b>{theme.name}</b></div>
-                            <div className={styles.theme_description}>{theme.description}</div>
-                            <hr></hr>
-                            <input maxLength="60" id="url-input" className={styles.input} placeholder="QR Code URL"></input>
-                            {qr_url_error != null && (<div style={{fontSize: "14pt", color: "#f43131"}}>{qr_url_error}</div>)}
-                            <div className={styles.flexbox + " " + styles.multiselect_container}>
-                                <div className={size == 0 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(0)}}>Small</div>
-                                <div className={size == 1 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(1)}}>Large</div>
-                                <div className={size == 2 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(2)}}>XL</div>
-                            </div>
-                            <div style={{color: "#a1a1a1", fontSize: "14pt", marginTop: "10px", marginBottom: "120px"}}>
-                                <div>10 Images</div>
-                                {size == 0 && (<div>512x512 Pixels</div>)}
-                                {size == 1 && (<div>2048x2048 Pixels</div>)}
-                                {size == 2 && (<div>4096x4096 Pixels</div>)}
-                                <div>Guaranteed Scannability</div>
-                            </div>
-                            <div style={{position: "absolute", width: "100%", left: "5%", bottom: "15px"}}>
-                                {user == null ? (<div style={{color: "#838383", fontSize: "14pt", width: "85%", marginBottom: "6px"}}>You must be logged in to create a QR Code</div>) :
-                                (
-                                    <div className={styles.pricebar}>
-                                        <div style={{fontSize: "18pt"}}>
-                                            <b>Total:</b>
-                                        </div>
-                                        <div style={{fontSize: "14pt", paddingTop: "2px"}}>
-                                            {"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}
-                                        </div>
-                                    </div>
-                                )}
-                                <div onClick={() => {user == null ? signIn() : createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
-                                    <span>{user == null ? "Sign In" : "Generate"}</span>
-                                </div>
-                            </div>
-                            
-                        </div>
-                    </div>
-                    <div className={styles.rounded_box}>
-                        <span>Related Themes</span>
-                        {related_themes != undefined ? (
-                        <div className={styles.flexbox + " " + styles.centered}>
-                            <>
-                            {related_themes.map((rth, i) => (
-                                <ThemeIcon key={"related-theme-" + i} theme={rth} style={i > 4 ? styles.hide_on_mobile : ""}></ThemeIcon>
-                            ))}
-                            </>
-                        </div>
-                        ) : (<></>)}
-                    </div>
-                </center>
-            </PageLayout>
-        )
+    if (context.error_msg != undefined){
+        if (context.error404 != undefined && context.error404) return (<Error404></Error404>)
+        else return (<ErrorPage msg={context.error_msg}></ErrorPage>);
     }
+
+    const theme = context.theme;
+    const related_themes = context.related_themes;
+
+    return (
+        <PageLayout title={theme.name + " QR Codes | Generate AI QR Codes | QR Theme"} user={user}>
+            <center>
+                <div className={styles.flexbox} style={{width: "100%", height: "100%"}}>
+                    <div className={styles.rounded_box + " " + styles.main_panel}>
+                        <div className={styles.qr_preview} id="qr-preview" style={{width: image_size + "px", height: image_size + "px"}}>
+                            {/*style={{backgroundImage: "url(\"/themes/" + theme.slug + ".png\")"}}*/}
+                            <Image src={"/themes/" + theme.slug + ".png"} id="preview-image" 
+                            width={image_size} height={image_size} alt={theme.name + " QR Code"}
+                            placeholder="blur" blurDataURL={"/thumbnails/" + theme.slug + ".png"}></Image>
+                        </div>
+                    </div>
+                    <div className={styles.rounded_box + " " + styles.side_panel}>
+                        <div><b>{theme.name}</b></div>
+                        <div className={styles.theme_description}>{theme.description}</div>
+                        <hr></hr>
+                        <input maxLength="60" id="url-input" className={styles.input} placeholder="QR Code URL"></input>
+                        {qr_url_error != null && (<div style={{fontSize: "14pt", color: "#f43131"}}>{qr_url_error}</div>)}
+                        <div className={styles.flexbox + " " + styles.multiselect_container}>
+                            <div className={size == 0 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(0)}}>Small</div>
+                            <div className={size == 1 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(1)}}>Large</div>
+                            <div className={size == 2 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(2)}}>XL</div>
+                        </div>
+                        <div style={{color: "#a1a1a1", fontSize: "14pt", marginTop: "10px", marginBottom: "120px"}}>
+                            <div>10 Images</div>
+                            {size == 0 && (<div>512x512 Pixels</div>)}
+                            {size == 1 && (<div>2048x2048 Pixels</div>)}
+                            {size == 2 && (<div>4096x4096 Pixels</div>)}
+                            <div>Guaranteed Scannability</div>
+                        </div>
+                        <div style={{position: "absolute", width: "100%", left: "5%", bottom: "15px"}}>
+                            {user == null ? (<div style={{color: "#838383", fontSize: "14pt", width: "85%", marginBottom: "6px"}}>You must be logged in to create a QR Code</div>) :
+                            (
+                                <div className={styles.pricebar}>
+                                    <div style={{fontSize: "18pt"}}>
+                                        <b>Total:</b>
+                                    </div>
+                                    <div style={{fontSize: "14pt", paddingTop: "2px"}}>
+                                        {"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}
+                                    </div>
+                                </div>
+                            )}
+                            <div onClick={() => {user == null ? signIn() : createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
+                                <span>{user == null ? "Sign In" : "Generate"}</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                {(context.orders != undefined && context.orders.length > 0) && (
+                    <div className={styles.rounded_box}>
+                        <span>Your Images:</span>
+                        <OrderResult order={context.orders[0]} i={0} size={image_size}></OrderResult>
+                    </div>
+                )}
+                {(context.orders != undefined && context.orders.length > 1) && (
+                    <div className={styles.rounded_box}>
+                        <span>Past Orders:</span>
+                        {context.orders.map((order, i) => {
+                            if (i == 0) return (<></>);
+                            else return (
+                                <OrderResult key={"past-order-" + i} order={order} i={i}></OrderResult>
+                            )
+                        })}
+                    </div>
+                )}
+                <div className={styles.rounded_box}>
+                    <span>Related Themes</span>
+                    {related_themes != undefined ? (
+                    <div className={styles.flexbox + " " + styles.centered}>
+                        <>
+                        {related_themes.map((rth, i) => (
+                            <ThemeIcon key={"related-theme-" + i} theme={rth} style={i > 4 ? styles.hide_on_mobile : ""}></ThemeIcon>
+                        ))}
+                        </>
+                    </div>
+                    ) : (<></>)}
+                </div>
+            </center>
+        </PageLayout>
+    )
 }

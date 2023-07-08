@@ -2,10 +2,10 @@
 import styles from "styles/Main.module.css";
 import Link from "next/link.js";
 
-export default function ThemeIcon({theme, i}){
+export default function ThemeIcon({theme, i, onClick}){
     if (i == undefined) i = 0;
     return (
-        <div key={"related-theme-" + theme.slug + Math.random()} className={styles.theme_icon_container + (i > 4 ? " " + styles.hide_on_mobile : "")}>
+        <div key={"related-theme-" + theme.slug + Math.random()} onClick = {() => {if (onClick != undefined) onClick()}} className={styles.theme_icon_container + (i > 4 ? " " + styles.hide_on_mobile : "")}>
             <Link href={"/" + theme.slug}>
                 <div className={styles.theme_icon} style={{backgroundImage: "url(\"/thumbnails/" + theme.slug + ".png\")"}}>
                 </div>

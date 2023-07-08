@@ -104,7 +104,7 @@ export default function Index(){
                             <center>
                                 <Link href="/themes">
                                     <span className={pagestyles.bottom_link}>Explore Themes</span>
-                                    <Image src="/right.png" width="22" height="22" alt="Right Arrow"></Image>
+                                    <Image src="/icons/right.png" width="22" height="22" alt="Right Arrow"></Image>
                                 </Link>
                             </center>
                         </div>

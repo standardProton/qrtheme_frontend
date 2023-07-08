@@ -15,13 +15,14 @@ export async function getServerSideProps(context){
 
     const categories = []
 
-    for (const [theme_id, theme] of Object.entries(theme_data)){
+    for (const [theme_id, theme] of Object.entries(theme_data).reverse()){
         if (!theme.hidden){
             const ctitle = category_title[theme.category];
             if (ctitle == undefined) console.warn("Undefined category " + theme.id + ": " + JSON.stringify(theme));
-            
+
             if (categories.length < theme.category + 1){
-                for (let i = 0; i < theme.category + 1 - categories.length; i++){
+                const start_len = categories.length;
+                for (let i = 0; i < theme.category + 1 - start_len; i++){
                     categories.push({name: "<Empty Category>", themes: []});
                 }
             }

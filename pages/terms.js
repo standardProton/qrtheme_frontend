@@ -54,7 +54,7 @@ export default function TermsAndPrivacy(){
                 </p>
                 <p>4.2 Suggestions: By sending content to us (such as in suggesting a theme), you grant QR Theme a worldwide,
                     royalty-free, non-exclusive license to use, reproduce, modify, adapt, publish, translate, and distribute
-                    products that are inspired directly or indirectly by the contents of your suggestion. 
+                    products that are inspired directly or indirectly inspired by the contents of your suggestion. 
                 </p>
                 <p>
                     4.3 Prohibited Activities: You agree not to use the Service for any unlawful or unauthorized activities. 
