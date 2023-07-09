@@ -6,7 +6,7 @@ import Image from "next/image";
 import { loadStripe } from '@stripe/stripe-js';
 import Error404 from "comps/Error404.js";
 import {shuffleArray, getConnection, mysqlQuery } from "lib/utils.ts";
-import { relatedThemes, getThemeSlug, createThemesList } from "lib/theme_utils";
+import { relatedThemes, getThemeSlug, getOrders } from "lib/theme_utils";
 import ErrorPage from "comps/ErrorPage";
 import { useState, useEffect } from "react";
 import { getServerSession } from "next-auth";
@@ -16,6 +16,7 @@ import {signIn} from "next-auth/react";
 import { authOptions } from "pages/api/auth/[...nextauth].js";
 import ThemeIcon from "comps/ThemeIcon";
 import OrderResult from "comps/OrderResult";
+import Router from "next/router";
 
 loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -50,13 +51,7 @@ export async function getServerSideProps(context){
         if (user != null){
             if (user.banned) return {props: {context: {error404: false, error_msg: "You are banned!"}}}
 
-            const order_res = await mysqlQuery(con, "SELECT id, output, qr_url FROM orders WHERE owner = ? AND theme_id = ?", [user.id, themedata.id]);
-            if (order_res != null && order_res.error_msg == null){
-                const images = order_res.results;
-                for (let i = 0; i < images.length; i++){
-                    orders.push({order_id: images[i].id, qr_url: images[i].qr_url, images: images[i].output.split(" ").filter(name => name.length > 0)});
-                }
-            }
+            orders = await getOrders(con, user.id, themedata.id);
 
         }
 
@@ -72,7 +67,9 @@ export default function ThemePreview({context, user, orders}){
     const [qr_url_error, setQRError] = useState(null);
     const [page_setup, setPageSetup] = useState(false);
     const [image_size, setImageSize] = useState(100);
-    //const [orders, setOrders] = useState(null);
+    const [updated_orders, setOrders] = useState(null);
+    const [theme_setup, setThemeSetup] = useState(false);
+    const [interval_id, setIntervalId] = useState(null);
 
     const small_price = 2.99;
     const med_price = 5.99;
@@ -82,40 +79,81 @@ export default function ThemePreview({context, user, orders}){
 	const { payment_success, payment_cancelled } = router.query;
 
     useEffect(() => {
+        if (context == undefined) return;
+
         const resize = () => {
             const pixels = Math.trunc(Math.min(window.innerWidth * ((window.innerWidth >= 1075 && window.innerWidth <= 1400) ? 0.4 : 0.55), 600));
             setImageSize(pixels);
         }
-        if (context != undefined){
-            if (!page_setup){
-                setPageSetup(true);
-                //setOrders(orders_init);
-                const url_input = document.getElementById("url-input");
-                if (url_input != null){
-                    url_input.addEventListener("input", () => {
-                        if (url_input.value.length >= 60){
-                            setQRError("This URL is too long! Use a link shortener");
-                            return;
-                        }else{
-                            setQRError(null);
-                        }
-                    })
-                }
 
-                if (payment_success){
-                    alert("Order placed!");
-                }
+        if (!page_setup){
+            setPageSetup(true);
+            const url_input = document.getElementById("url-input");
+            if (url_input != null){
+                url_input.addEventListener("input", () => {
+                    if (url_input.value.length >= 60){
+                        setQRError("This URL is too long! Use a link shortener");
+                        return;
+                    }else{
+                        setQRError(null);
+                    }
+                })
+            }
 
-                //const qr = document.getElementById("qr-preview");
-                //const qr_image = document.getElementById("preview-image");
-                if (window != null){
-                    window.addEventListener("resize", () => resize());
-                    resize();
+            if (payment_success){
+                alert("Order placed!");
+            }
+
+            //const qr = document.getElementById("qr-preview");
+            //const qr_image = document.getElementById("preview-image");
+            if (window != null){
+                window.addEventListener("resize", () => resize());
+                resize();
+            }
+
+        }
+        resize();
+
+    }, [page_setup, payment_success])
+
+    /*useEffect(() => {
+        if (context == undefined || theme_setup) return;
+        setThemeSetup(true);
+        console.log("Theme Effect");
+
+        if (orders != null && orders.length > 0){
+            var in_process = false;
+            for (let i = 0; i < orders.length; i++){
+                if (orders[i].images.length < 10) {
+                    in_process = true;
+                    break;
                 }
             }
-            resize();
+            return;
+            if (in_process){
+                console.log("In process");
+                const id = setInterval(async () => {
+                    console.log("update orders theme_id=" + context.theme.id);
+                    //const order_res = await fetch("/api/v1/check_orders");//?user_id=" + user.id + "&theme_id=" + context.theme.id);
+                    //console.log(await order_res.json());
+                }, 1000);
+                console.log("id = " + id);
+                return () => {
+                    console.log("clear pid " + id);
+                    clearInterval(id);
+                }
+            }
         }
-    }, [payment_success])
+
+    }, [theme_setup]);*/
+
+    useEffect(() => {
+        if (interval_id != null){
+            console.log("clear id " + interval_id);
+            clearInterval(interval_id);
+        }
+    }, [])
+
 
     async function createOrder(user){
         const url_input = document.getElementById("url-input").value;
@@ -211,17 +249,17 @@ export default function ThemePreview({context, user, orders}){
                 </div>
                 {(orders != null && orders.length > 0) && (
                     <div className={styles.rounded_box}>
-                        <span>Your Images:</span>
-                        <OrderResult order={orders[0]} i={0} size={image_size}></OrderResult>
+                        {orders[orders.length - 1].images.length > 0 && (<span>Your Images:</span>)}
+                        <OrderResult order={orders[orders.length - 1]} past_order={false} size={image_size}></OrderResult>
                     </div>
                 )}
                 {(orders != undefined && orders.length > 1) && (
                     <div className={styles.rounded_box}>
                         <span>Past Orders:</span>
-                        {orders.map((order, i) => {
+                        {orders.reverse().map((order, i) => {
                             if (i == 0) return (<></>);
                             else return (
-                                <OrderResult key={"past-order-" + i} order={order} i={i}></OrderResult>
+                                <OrderResult key={"past-order-" + i} order={order} past_order={true} size={image_size}></OrderResult>
                             )
                         })}
                     </div>
@@ -232,7 +270,7 @@ export default function ThemePreview({context, user, orders}){
                     <div className={styles.flexbox + " " + styles.centered}>
                         <>
                         {related_themes.map((rth, i) => (
-                            <ThemeIcon key={"related-theme-" + i} theme={rth} style={i > 4 ? styles.hide_on_mobile : ""}></ThemeIcon>
+                            <ThemeIcon onClick={() => setThemeSetup(false)} key={"related-theme-" + i} theme={rth} style={i > 4 ? styles.hide_on_mobile : ""}></ThemeIcon>
                         ))}
                         </>
                     </div>

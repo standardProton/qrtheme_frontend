@@ -1,46 +1,84 @@
 import styles from "styles/Main.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image.js";
 import Link from "next/link.js";
 import ImageScroll from "./ImageScroll";
-import ThemeIcon from "./ThemeIcon";
 
-export default function OrderResult({order, i, size}){
-    const [hidden, setHidden] = useState(i > 0);
+export default function OrderResult({order, past_order, size}){
+    const [hidden, setHidden] = useState(past_order);
     const [view_index, setViewIndex] = useState(-1);
+    const [src_list, setSourceList] = useState([]);
 
     const url_base = "https://qr-theme-image.s3.us-east-2.amazonaws.com/";
-    const name_prefix = ""; //"QR_Theme_";
+    const name_prefix = "QR_Theme_";
 
-    const src_list = [];
-    for (let j = 0; j < order.images.length; j++) src_list.push(url_base + "order-" + order.order_id + "/" + name_prefix + order.images[j] + ".jpg");
+    const id = order.order_id;
 
     if (size > 400) size = 5*size/6.0;
 
+    useEffect(() => {
+
+        const newsrc_list = [];
+        for (let j = 0; j < order.images.length; j++) newsrc_list.push(url_base + "order-" + id + "/" + name_prefix + order.images[j] + ".jpg");
+        setSourceList(newsrc_list);
+
+        if(newsrc_list.length < 10) {
+            var updating = true;
+            const iid = setInterval(async () => {
+                if (updating){
+                    const res1 = await fetch("/api/v1/check_orders?order_id=" + id);
+                    if (res1.status == 200){
+                        const order_ref = await res1.json();
+                        if (order_ref.output == undefined) {
+                            console.error("Could not refresh order images: undefined");
+                            return;
+                        }
+                        
+                        const refreshed_src = [];
+                        const images = order_ref.output.split(" ").filter(name => name.length > 0);
+                        for (let j = 0; j < images.length; j++) refreshed_src.push(url_base + "order-" + id + "/" + name_prefix + images[j] + ".jpg");
+                        setSourceList(refreshed_src);
+                        if (refreshed_src.length >= 10) updating = false;
+
+                    }
+                }
+            }, 4000);
+            return () => clearInterval(iid);
+        }
+    }, [])
+
     return (
-        <div key={"order-result-" + order.id} style={{textAlign: "left"}}>
-            {hidden ? (<></>) :
+        <div key={"order-result-" + id} style={{textAlign: "left"}}>
+            {hidden ? (<div onClick={() => {
+                setViewIndex(-1);
+                setHidden(false);
+            }} style={{display: "flex", cursor: "pointer", marginTop: "10px", marginBottom: "10px"}}>
+                <Image src="/icons/right.png" width="24" height="24" alt="Right Arrow" style={{marginRight: "8px"}}></Image>
+                <div style={{fontSize: "20pt"}}>
+                    <b>{order.qr_url}</b>
+                </div>
+            </div>) :
             (
                 <>
                 {view_index < 0 ? (
                 <>
-                <div style={{marginTop: "10px", marginBottom: "10px"}}>
-                    <span style={{cursor: "pointer", fontSize: "20pt"}}><b>{order.qr_url}</b></span>
-                </div>
+                {src_list.length > 0 && (<div onClick={() => {if (past_order) setHidden(true)}} style={{marginTop: "10px", marginBottom: "10px", display: "flex"}}>
+                    {past_order && (<Image src="/icons/down.png" width="24" height="24" alt="Down Arrow"></Image>)}
+                    <span style={{cursor: past_order ? "pointer" : "inherit", marginLeft: "8px", fontSize: "20pt"}}><b>{order.qr_url}</b></span>
+                </div>)}
                 <div className={styles.flexbox} style={{justifyContent: "center", alignItems: "center", textAlign: "center"}}>
-                    {order.images.map((image, j) => {
-                        const img_url = url_base + "order-" + order.order_id + "/" + name_prefix + image + ".jpg";
+                    {src_list.map((image, j) => {
                         return (
-                        <div className={styles.theme_icon} style={{cursor: "pointer", backgroundImage: "url(\"" + img_url + "\")"}}
-                        onClick={() => {setViewIndex(j)}} key={"image-gen-icon-" + j}></div>
+                            <div className={styles.theme_icon} style={{cursor: "pointer", backgroundImage: "url(\"" + image + "\")"}}
+                            onClick={() => {setViewIndex(j)}} key={"image-gen-icon-" + j}></div>
                         )
                     })}
                 </div>
-                {order.images.length < 10 && (
+                {src_list.length < 10 && (
                     <div>
                         <center>
-                            <div style={{margin: "10px"}}><span>{"Generating " + (10 - order.images.length) + 
-                            (order.images.length > 0 ? " More" : "") + " Image" + (order.images.length == 9 ? "" : "s") + "..."}</span></div>
+                            <div style={{margin: "10px"}}><span>{"Generating " + (10 - src_list.length) + 
+                            (src_list.length > 0 ? " More" : "") + " Image" + (src_list.length == 9 ? "" : "s") + "..."}</span></div>
                             <Image src="/loading.gif" height="40" width="40" alt="Loading"></Image>
                         </center>
                     </div>
