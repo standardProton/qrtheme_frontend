@@ -1,4 +1,4 @@
-import { getTheme } from 'lib/theme_utils';
+import { getThemeSlug } from 'lib/theme_utils';
 import { getConnection } from 'lib/utils';
 import Stripe from "stripe";
 
@@ -29,8 +29,8 @@ export default async function handler(req, res) {
 			res.status(406).json({error_msg: "Size must be an integer between 0-2!"});
 			return;
 		}
-		if (typeof data.url_text != "string" || data.url_text.length > 60 || data.url_text.length == 0){
-			res.status(406).json({error_msg: "Invalid URL Text! Must be 1-60 characters in length."});
+		if (typeof data.url_text != "string" || data.url_text.length >= 50 || data.url_text.length == 0){
+			res.status(406).json({error_msg: "Invalid URL Text! Must be less than 50 characters in length."});
 			return;
 		}
 		
@@ -40,17 +40,21 @@ export default async function handler(req, res) {
 			return;
 		}
 
-		const theme = await getTheme(con, data.theme_slug);
+		const theme = getThemeSlug(data.theme_slug);
 		if (theme == null || theme.error_msg != undefined){
 			res.status(404).json({error_msg: "Could not find this theme!"});
+			con.end();
 			return;
 		}
 
+		const price_id = process.env.DEV_ENV ? "price_1NQJgjAjvjIu0fAeKSJwEg8H" : theme.price_ids[data.size];
+
 		try {
+
 			const params = {
 				line_items: [
 					{
-						price: 'price_1NQJgjAjvjIu0fAeKSJwEg8H',
+						price: price_id,
 						quantity: 1,
 					},
 				],
@@ -63,18 +67,17 @@ export default async function handler(req, res) {
 
 			const session = await stripe.checkout.sessions.create(params);
 
-			console.log("stripe id= " + session.id);
-
-			con.execute("INSERT INTO orders (owner, order_status, theme_id, order_timestamp, qr_url, stripe_id) VALUES (?, ?, ?, ?, ?, ?)", [
-				data.user.id, 1, theme.id, Math.trunc((new Date()).getTime()/1000), data.url_text, session.id
+			await con.execute("INSERT INTO orders (owner, order_status, theme_id, order_timestamp, qr_url, stripe_id, size) VALUES (?, ?, ?, ?, ?, ?, ?)", [
+				data.user.id, 1, theme.id, Math.trunc((new Date()).getTime()/1000), data.url_text, session.id, data.size
 			]);
-
-			console.log("A");
+			con.end();
 
 			res.status(303).json({status: "Success", redirect_url: session.url});
 			//res.redirect(303, session.url);
 		} catch (err) {
-			res.status(err.statusCode || 500).json({error_msg: err.message});
+			console.error(err);
+			console.log("Could not create an order!");
+			res.status(err.statusCode || 500).json({error_msg: "An error occured while placing this order!"});
 		}
 	} else {
 		res.setHeader('Allow', 'POST');

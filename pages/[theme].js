@@ -65,11 +65,9 @@ export default function ThemePreview({context, user, orders}){
 
     const [size, setSize] = useState(1);
     const [qr_url_error, setQRError] = useState(null);
+    const [submit_error, setSubmitError] = useState(null);
     const [page_setup, setPageSetup] = useState(false);
     const [image_size, setImageSize] = useState(100);
-    const [updated_orders, setOrders] = useState(null);
-    const [theme_setup, setThemeSetup] = useState(false);
-    const [interval_id, setIntervalId] = useState(null);
 
     const small_price = 2.99;
     const med_price = 5.99;
@@ -91,7 +89,7 @@ export default function ThemePreview({context, user, orders}){
             const url_input = document.getElementById("url-input");
             if (url_input != null){
                 url_input.addEventListener("input", () => {
-                    if (url_input.value.length >= 60){
+                    if (url_input.value.length >= 50){
                         setQRError("This URL is too long! Use a link shortener");
                         return;
                     }else{
@@ -116,45 +114,6 @@ export default function ThemePreview({context, user, orders}){
 
     }, [page_setup, payment_success])
 
-    /*useEffect(() => {
-        if (context == undefined || theme_setup) return;
-        setThemeSetup(true);
-        console.log("Theme Effect");
-
-        if (orders != null && orders.length > 0){
-            var in_process = false;
-            for (let i = 0; i < orders.length; i++){
-                if (orders[i].images.length < 10) {
-                    in_process = true;
-                    break;
-                }
-            }
-            return;
-            if (in_process){
-                console.log("In process");
-                const id = setInterval(async () => {
-                    console.log("update orders theme_id=" + context.theme.id);
-                    //const order_res = await fetch("/api/v1/check_orders");//?user_id=" + user.id + "&theme_id=" + context.theme.id);
-                    //console.log(await order_res.json());
-                }, 1000);
-                console.log("id = " + id);
-                return () => {
-                    console.log("clear pid " + id);
-                    clearInterval(id);
-                }
-            }
-        }
-
-    }, [theme_setup]);*/
-
-    useEffect(() => {
-        if (interval_id != null){
-            console.log("clear id " + interval_id);
-            clearInterval(interval_id);
-        }
-    }, [])
-
-
     async function createOrder(user){
         const url_input = document.getElementById("url-input").value;
         if (url_input.length == 0){
@@ -170,7 +129,7 @@ export default function ThemePreview({context, user, orders}){
             return;
         }
 
-        const res = await fetch("/api/checkout_session", {
+        const res = await fetch("/api/stripe/checkout_session", {
             method: "POST",
             body: JSON.stringify({
                 theme_slug: context.theme.slug,
@@ -181,9 +140,9 @@ export default function ThemePreview({context, user, orders}){
         });        
 
         const j = await res.json();
-        if (res.status == 303){
-            router.push(j.redirect_url);
-        }
+        if (j.error_msg != undefined) setSubmitError(j.error_msg);
+        else if (j.redirect_url) router.push(j.redirect_url);
+
         console.log(j);
     }
 
@@ -243,6 +202,9 @@ export default function ThemePreview({context, user, orders}){
                             <div onClick={() => {user == null ? signIn() : createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
                                 <span>{user == null ? "Sign In" : "Generate"}</span>
                             </div>
+                            <div style={{textAlign: "center", width: "90%"}}>
+                                {submit_error != null && (<span style={{color: "#f43131", fontSize: "14pt"}}>{submit_error}</span>)}
+                            </div>
                         </div>
                         
                     </div>
@@ -270,7 +232,7 @@ export default function ThemePreview({context, user, orders}){
                     <div className={styles.flexbox + " " + styles.centered}>
                         <>
                         {related_themes.map((rth, i) => (
-                            <ThemeIcon onClick={() => setThemeSetup(false)} key={"related-theme-" + i} theme={rth} style={i > 4 ? styles.hide_on_mobile : ""}></ThemeIcon>
+                            <ThemeIcon key={"related-theme-" + i} theme={rth} style={i > 4 ? styles.hide_on_mobile : ""}></ThemeIcon>
                         ))}
                         </>
                     </div>
