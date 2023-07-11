@@ -58,6 +58,8 @@ export async function getServerSideProps(context){
         con.end();
     }
 
+    console.log("Google ID = " + process.env.GOOGLE_CLIENT_ID);
+
     return {props: {context: {theme: themedata, related_themes}, user, orders}}
 }
 

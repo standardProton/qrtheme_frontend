@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { buffer } from 'micro';
-import { getConnection } from '../../../lib/utils';
+import { getConnection, mysqlQuery } from '../../../lib/utils';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -36,6 +36,26 @@ export default async function handleWebhookEvent(req, res) {
       }
 
       await con.execute("UPDATE orders SET order_status = 2 WHERE stripe_id = ?", [session.id]);
+
+      const res1 = await mysqlQuery("SELECT * FROM orders WHERE stripe_id = ?", [session.id]);
+
+      if (res1.error_msg == null){
+
+        if (res1.results.length > 0) {
+
+          const theme_id = res1.results[0].id;
+          const user_id = res1.results[0].owner;
+
+          con.execute("UPDATE themes SET purchases = purchases + 1, purchasers = CONCAT(purchasers, ?) WHERE id = ?", [theme_id, user_id + " "]);
+
+          console.log("Updating stats for theme id " + theme_id + ", owner=" + user_id);
+
+        }
+
+      } else {
+        console.log("Error while updating theme stats:");
+        console.error(res1.error_msg);
+      }
 
       console.log("Success!");
 

@@ -47,7 +47,7 @@ export default async function handler(req, res) {
 			return;
 		}
 
-		const price_id = process.env.DEV_ENV ? "price_1NQJgjAjvjIu0fAeKSJwEg8H" : theme.price_ids[data.size];
+		const price_id = process.env.DEV_ENV ? "price_1NSbuKAjvjIu0fAepKll7FtH" : theme.price_ids[data.size];  //price_1NQJgjAjvjIu0fAeKSJwEg8H
 
 		try {
 
