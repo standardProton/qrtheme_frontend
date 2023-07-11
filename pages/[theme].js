@@ -16,7 +16,7 @@ import {signIn} from "next-auth/react";
 import { authOptions } from "pages/api/auth/[...nextauth].js";
 import ThemeIcon from "comps/ThemeIcon";
 import OrderResult from "comps/OrderResult";
-import Router from "next/router";
+import { useRef } from "react";
 
 loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -58,8 +58,6 @@ export async function getServerSideProps(context){
         con.end();
     }
 
-    console.log("Google ID = " + process.env.GOOGLE_CLIENT_ID);
-
     return {props: {context: {theme: themedata, related_themes}, user, orders}}
 }
 
@@ -76,7 +74,7 @@ export default function ThemePreview({context, user, orders}){
     const large_price = 6.99;
 
     const router = useRouter();
-	const { payment_success, payment_cancelled } = router.query;
+	const { payment_success, payment_cancelled, awaiting_images } = router.query;
 
     useEffect(() => {
         if (context == undefined) return;
@@ -114,9 +112,16 @@ export default function ThemePreview({context, user, orders}){
         }
         resize();
 
-    }, [page_setup, payment_success])
+    }, [page_setup])
+    
+    const order_wait = useRef();
 
-    async function createOrder(user){
+    useEffect(() => {
+        if (awaiting_images && order_wait.current != undefined) order_wait.current.scrollIntoView({behavior: "smooth", block: "start"});
+    }, [awaiting_images]);
+
+
+    async function createOrder(){
         const url_input = document.getElementById("url-input").value;
         if (url_input.length == 0){
             setQRError("Enter the URL for the QR code!");
@@ -137,15 +142,13 @@ export default function ThemePreview({context, user, orders}){
                 theme_slug: context.theme.slug,
                 size,
                 url_text: url_input,
-                user
             })
         });        
 
         const j = await res.json();
         if (j.error_msg != undefined) setSubmitError(j.error_msg);
         else if (j.redirect_url) router.push(j.redirect_url);
-
-        console.log(j);
+        else router.push("/" + context.theme.slug + "?awaiting_images=true");
     }
 
     if (context == undefined) return (<></>); //TODO
@@ -182,7 +185,7 @@ export default function ThemePreview({context, user, orders}){
                             <div className={size == 1 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(1)}}>Large</div>
                             <div className={size == 2 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(2)}}>XL</div>
                         </div>
-                        <div style={{color: "#a1a1a1", fontSize: "14pt", marginTop: "10px", marginBottom: "120px"}}>
+                        <div style={{color: "#a1a1a1", fontSize: "14pt", marginTop: "10px", marginBottom: "150px"}}>
                             <div>10 Images</div>
                             {size == 0 && (<div>512x512 Pixels</div>)}
                             {size == 1 && (<div>2048x2048 Pixels</div>)}
@@ -197,7 +200,10 @@ export default function ThemePreview({context, user, orders}){
                                         <b>Total:</b>
                                     </div>
                                     <div style={{fontSize: "14pt", paddingTop: "2px"}}>
-                                        {"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}
+                                        <div>
+                                            <span style={{textDecoration: user.free_images > 0 ? "line-through" : "inherit"}}>{"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}</span>
+                                            {user.free_images > 0 && (<span style={{color: "#09fa21"}}> FREE</span>)}
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -207,12 +213,15 @@ export default function ThemePreview({context, user, orders}){
                             <div style={{textAlign: "center", width: "90%"}}>
                                 {submit_error != null && (<span style={{color: "#f43131", fontSize: "14pt"}}>{submit_error}</span>)}
                             </div>
+                            <div style={{textAlign: "center", width: "90%", marginTop: "5px"}}>
+                                {user.free_images > 0 && (<span style={{color: "#a1a1a1"}}>You have <b>{user.free_images}</b> free image{user.free_images == 1?"":"s"} remaining!</span>)}
+                            </div>
                         </div>
                         
                     </div>
                 </div>
                 {(orders != null && orders.length > 0) && (
-                    <div className={styles.rounded_box}>
+                    <div className={styles.rounded_box} ref={order_wait}>
                         {orders[orders.length - 1].images.length > 0 && (<span>Your Images:</span>)}
                         <OrderResult order={orders[orders.length - 1]} past_order={false} size={image_size}></OrderResult>
                     </div>

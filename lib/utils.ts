@@ -41,6 +41,7 @@ export async function getConnection(){
             console.log("Could not connect to MySQL:");
             console.error(err);
         }
+        console.log("Successful MySQL connection");
         resolve(con);
     });
 }
