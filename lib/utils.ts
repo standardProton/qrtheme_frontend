@@ -29,11 +29,11 @@ export async function getConnection(){
         try{
             if (!process.env.DEV_ENV){
                 //@ts-ignore
-                /*params.ssl = {
+                params.ssl = {
                     //@ts-ignore
                     ca: Buffer.from(process.env.DB_CA.replaceAll("\\n", "\n"), "utf-8"), //newline chars must be in env var
                     //rejectUnauthorized: false
-                }*/
+                }
             }
             //@ts-ignore
             con = await mysql.createConnection(params);
