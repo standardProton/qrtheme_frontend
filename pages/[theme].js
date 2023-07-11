@@ -120,6 +120,8 @@ export default function ThemePreview({context, user, orders}){
         if (awaiting_images && order_wait.current != undefined) order_wait.current.scrollIntoView({behavior: "smooth", block: "start"});
     }, [awaiting_images]);
 
+    const has_free = user != null && user.free_images > 0;
+
 
     async function createOrder(){
         const url_input = document.getElementById("url-input").value;
@@ -201,8 +203,8 @@ export default function ThemePreview({context, user, orders}){
                                     </div>
                                     <div style={{fontSize: "14pt", paddingTop: "2px"}}>
                                         <div>
-                                            <span style={{textDecoration: user.free_images > 0 ? "line-through" : "inherit"}}>{"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}</span>
-                                            {user.free_images > 0 && (<span style={{color: "#09fa21"}}> FREE</span>)}
+                                            <span style={{textDecoration: has_free ? "line-through" : "inherit"}}>{"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}</span>
+                                            {has_free && (<span style={{color: "#09fa21"}}> FREE</span>)}
                                         </div>
                                     </div>
                                 </div>
@@ -214,7 +216,7 @@ export default function ThemePreview({context, user, orders}){
                                 {submit_error != null && (<span style={{color: "#f43131", fontSize: "14pt"}}>{submit_error}</span>)}
                             </div>
                             <div style={{textAlign: "center", width: "90%", marginTop: "5px"}}>
-                                {user.free_images > 0 && (<span style={{color: "#a1a1a1"}}>You have <b>{user.free_images}</b> free image{user.free_images == 1?"":"s"} remaining!</span>)}
+                                {has_free && (<span style={{color: "#a1a1a1"}}>You have <b>{user.free_images}</b> free image{user.free_images == 1?"":"s"} remaining!</span>)}
                             </div>
                         </div>
                         
