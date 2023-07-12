@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { buffer } from 'micro';
-import { getConnection, mysqlQuery } from '../../../lib/utils';
+import { getConnection, mysqlQuery, encryptConstiv } from 'lib/utils';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -35,9 +35,12 @@ export default async function handleWebhookEvent(req, res) {
         return;
       }
 
-      await con.execute("UPDATE orders SET order_status = 2 WHERE stripe_id = ?", [session.id]);
+      const session_id = encryptConstiv(session.id);
+      console.log("Searching for order with encrypted stripe id " + session_id);
 
-      const res1 = await mysqlQuery("SELECT * FROM orders WHERE stripe_id = ?", [session.id]);
+      await con.execute("UPDATE orders SET order_status = 2 WHERE stripe_id = ?", [session_id]);
+
+      const res1 = await mysqlQuery("SELECT * FROM orders WHERE stripe_id = ?", [session_id]);
 
       if (res1.error_msg == null){
 
