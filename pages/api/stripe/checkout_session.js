@@ -107,7 +107,7 @@ export default async function handler(req, res) {
 			console.error(err);
 			console.log("Could not create an order!");
 			con.end();
-			res.status(err.statusCode || 500).json({error_msg: "An error occured while placing this order!"});
+			res.status(err.statusCode || 500).json({error_msg: "An error occured while placing this order!", detailed_error: err.message});
 		}
 	} else {
 		res.setHeader('Allow', 'POST');
