@@ -68,6 +68,7 @@ export default function ThemePreview({context, user, orders}){
     const [submit_error, setSubmitError] = useState(null);
     const [page_setup, setPageSetup] = useState(false);
     const [image_size, setImageSize] = useState(100);
+    const [response_spin, setAwaitingResponse] = useState(false);
 
     const small_price = 2.99;
     const med_price = 5.99;
@@ -124,6 +125,7 @@ export default function ThemePreview({context, user, orders}){
 
 
     async function createOrder(){
+        if (response_spin) return;
         const url_input = document.getElementById("url-input").value;
         if (url_input.length == 0){
             setQRError("Enter the URL for the QR code!");
@@ -138,6 +140,8 @@ export default function ThemePreview({context, user, orders}){
             return;
         }
 
+        setAwaitingResponse(true);
+
         const res = await fetch("/api/stripe/checkout_session", {
             method: "POST",
             body: JSON.stringify({
@@ -148,6 +152,7 @@ export default function ThemePreview({context, user, orders}){
         });        
 
         const j = await res.json();
+        setAwaitingResponse(false);
         if (j.error_msg != undefined) setSubmitError(j.error_msg);
         else if (j.redirect_url) router.push(j.redirect_url);
         else router.push("/" + context.theme.slug + "?awaiting_images=true");
@@ -210,7 +215,9 @@ export default function ThemePreview({context, user, orders}){
                                 </div>
                             )}
                             <div onClick={() => {user == null ? signIn() : createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
-                                <span>{user == null ? "Sign In" : "Generate"}</span>
+                                {response_spin ? (
+                                    <Image src="/loading.gif" height="24" width="24" alt="Waiting..."></Image>
+                                ) : (<span>{user == null ? "Sign In" : "Generate"}</span>)}
                             </div>
                             <div style={{textAlign: "center", width: "90%"}}>
                                 {submit_error != null && (<span style={{color: "#f43131", fontSize: "14pt"}}>{submit_error}</span>)}
