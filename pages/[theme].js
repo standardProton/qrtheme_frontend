@@ -193,10 +193,12 @@ export default function ThemePreview({context, user, orders}){
                             <div className={size == 2 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(2)}}>XL</div>
                         </div>
                         <div style={{color: "#a1a1a1", fontSize: "14pt", marginTop: "10px", marginBottom: "150px"}}>
-                            <div>10 Images</div>
-                            {size == 0 && (<div>512x512 Pixels</div>)}
-                            {size == 1 && (<div>2048x2048 Pixels</div>)}
-                            {size == 2 && (<div>4096x4096 Pixels</div>)}
+                            {size == 0 && (<><div>$0.30 x 10 Images</div>
+                                <div>512x512 Pixels</div></>)}
+                            {size == 1 && (<><div>$0.60 x 10 Images</div>
+                            <div>2048x2048 Pixels</div></>)}
+                            {size == 2 && (<><div>$0.70 x 10 Images</div>
+                            <div>4096x4096 Pixels</div></>)}
                             <div>Guaranteed Scannability</div>
                         </div>
                         <div style={{position: "absolute", width: "100%", left: "5%", bottom: "15px"}}>

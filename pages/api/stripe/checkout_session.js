@@ -1,5 +1,5 @@
 import { getThemeSlug } from 'lib/theme_utils';
-import { getConnection, encryptConstiv } from 'lib/utils';
+import { getConnection } from 'lib/utils';
 import Stripe from "stripe";
 import { getServerSession } from 'next-auth';
 import authOptions from "pages/api/auth/[...nextauth].js";
@@ -97,7 +97,7 @@ export default async function handler(req, res) {
 			}
 
 			await con.execute("INSERT INTO orders (owner, order_status, theme_id, order_timestamp, qr_url, stripe_id, size) VALUES (?, ?, ?, ?, ?, ?, ?)", [
-				user.id, free ? 2 : 1, theme.id, Math.trunc((new Date()).getTime()/1000), data.url_text, free ? null : encryptConstiv(session.id), data.size
+				user.id, free ? 2 : 1, theme.id, Math.trunc((new Date()).getTime()/1000), data.url_text, free ? null : session.id, data.size
 			]);
 			con.end();
 
