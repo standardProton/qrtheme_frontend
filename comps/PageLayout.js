@@ -33,7 +33,7 @@ export default function PageContainer({title, description, user, children}){
         <>
             <Head>
                 <title>{title}</title>
-                <link rel="icon" href="/favicon.png"></link>
+                <link rel="icon" type="image/png" href="/favicon.png"></link>
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="description" content={desc}></meta>
                 <meta name="og:image" content="/logo.png"></meta>

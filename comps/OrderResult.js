@@ -45,7 +45,7 @@ export default function OrderResult({order, past_order, size}){
             }, 4000);
             return () => clearInterval(iid);
         }
-    }, [])
+    }, [order])
 
     return (
         <div key={"order-result-" + id} style={{textAlign: "left"}}>
