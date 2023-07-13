@@ -225,7 +225,7 @@ export default function ThemePreview({context, user, orders}){
                                 {submit_error != null && (<span style={{color: "#f43131", fontSize: "14pt"}}>{submit_error}</span>)}
                             </div>
                             <div style={{textAlign: "center", width: "90%", marginTop: "5px"}}>
-                                {has_free && (<span style={{color: "#a1a1a1"}}>You have <b>{user.free_images}</b> free image{user.free_images == 1?"":"s"} remaining!</span>)}
+                                {has_free && (<span style={{color: "#a1a1a1"}}>You have <b>{user.free_images}</b> free QR Code{user.free_images == 1?"":"s"} remaining!</span>)}
                             </div>
                         </div>
                         
