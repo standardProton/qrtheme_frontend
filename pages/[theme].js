@@ -57,7 +57,7 @@ export async function getServerSideProps(context){
 
         con.end();
     }
-
+    
     return {props: {context: {theme: themedata, related_themes}, user, orders}}
 }
 
@@ -83,7 +83,6 @@ export default function ThemePreview({context, user, orders}){
         const resize = () => {
             const pixels = Math.trunc(Math.min(window.innerWidth * ((window.innerWidth >= 1075 && window.innerWidth <= 1400) ? 0.4 : 0.55), 600));
             setImageSize(pixels);
-            console.log(orders);
         }
 
         if (!page_setup){
@@ -234,14 +233,14 @@ export default function ThemePreview({context, user, orders}){
                 </div>
                 {(orders != null && orders.length > 0) && (
                     <div className={styles.rounded_box} ref={order_wait}>
-                        {orders[orders.length - 1].images.length > 0 && (<span>Your Images:</span>)}
-                        <OrderResult order={orders[orders.length - 1]} past_order={false} size={image_size}></OrderResult>
+                        {orders[0].images.length > 0 && (<span>Your Images:</span>)}
+                        <OrderResult order={orders[0]} past_order={false} size={image_size}></OrderResult>
                     </div>
                 )}
                 {(orders != undefined && orders.length > 1) && (
                     <div className={styles.rounded_box}>
                         <span>Past Orders:</span>
-                        {orders.reverse().map((order, i) => {
+                        {orders.map((order, i) => {
                             if (i == 0) return (<></>);
                             else return (
                                 <OrderResult key={"past-order-" + i} order={order} past_order={true} size={image_size}></OrderResult>
