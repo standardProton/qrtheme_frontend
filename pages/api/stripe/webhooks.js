@@ -40,7 +40,7 @@ export default async function handleWebhookEvent(req, res) {
 
       await con.execute("UPDATE orders SET order_status = 2 WHERE stripe_id = ?", [session_id]);
 
-      const res1 = await mysqlQuery("SELECT * FROM orders WHERE stripe_id = ?", [session_id]);
+      const res1 = await mysqlQuery(con, "SELECT * FROM orders WHERE stripe_id = ?", [session_id]);
 
       if (res1.error_msg == null){
 

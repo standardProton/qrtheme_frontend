@@ -20,7 +20,6 @@ export default function ImageScroll({src_list, blur_list, width, height, alt, vi
         </div>
         {src_list.length > 0 && (<div style={{marginTop: "20px", display: "flex", justifyContent: "center", alignItems: "center", textAlign: "center"}}>
             <div onClick={() => {
-                console.log("left");
                 if (view_index <= 0) setViewIndex(src_list.length - 1);
                 else setViewIndex(view_index - 1);
             }} style={{cursor: "pointer", marginTop: "5px"}}>

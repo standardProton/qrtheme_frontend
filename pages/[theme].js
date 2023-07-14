@@ -193,11 +193,11 @@ export default function ThemePreview({context, user, orders}){
                             <div className={size == 2 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(2)}}>XL</div>
                         </div>
                         <div style={{color: "#a1a1a1", fontSize: "14pt", marginTop: "10px", marginBottom: "150px"}}>
-                            {size == 0 && (<><div>$0.30 x 10 Images</div>
+                            {size == 0 && (<><div>10 Images, $0.30 Each</div>
                                 <div>512x512 Pixels</div></>)}
-                            {size == 1 && (<><div>$0.60 x 10 Images</div>
+                            {size == 1 && (<><div>10 Images, $0.60 Each</div>
                             <div>2048x2048 Pixels</div></>)}
-                            {size == 2 && (<><div>$0.70 x 10 Images</div>
+                            {size == 2 && (<><div>10 Images, $0.70 Each</div>
                             <div>4096x4096 Pixels</div></>)}
                             <div>Guaranteed Scannability</div>
                         </div>
@@ -225,7 +225,8 @@ export default function ThemePreview({context, user, orders}){
                                 {submit_error != null && (<span style={{color: "#f43131", fontSize: "14pt"}}>{submit_error}</span>)}
                             </div>
                             <div style={{textAlign: "center", width: "90%", marginTop: "5px"}}>
-                                {has_free && (<span style={{color: "#a1a1a1"}}>You have <b>{user.free_images}</b> free QR Code{user.free_images == 1?"":"s"} remaining!</span>)}
+                                {(has_free && user.free_images == 1) && (<span style={{color: "#a1a1a1"}}>Make your first QR Code for free!</span>)}
+                                {(has_free && user.free_images > 1) && (<span style={{color: "#a1a1a1"}}>You have <b>{user.free_images}</b> free QR Code{user.free_images == 1?"":"s"} remaining!</span>)}
                             </div>
                         </div>
                         
