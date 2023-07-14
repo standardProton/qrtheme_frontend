@@ -83,6 +83,7 @@ export default function ThemePreview({context, user, orders}){
         const resize = () => {
             const pixels = Math.trunc(Math.min(window.innerWidth * ((window.innerWidth >= 1075 && window.innerWidth <= 1400) ? 0.4 : 0.55), 600));
             setImageSize(pixels);
+            console.log(orders);
         }
 
         if (!page_setup){
