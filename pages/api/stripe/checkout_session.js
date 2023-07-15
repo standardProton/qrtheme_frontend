@@ -1,5 +1,5 @@
 import { getThemeSlug } from 'lib/theme_utils';
-import { getConnection } from 'lib/utils';
+import { getConnection, getNewId } from 'lib/utils';
 import Stripe from "stripe";
 import { getServerSession } from 'next-auth';
 import authOptions from "pages/api/auth/[...nextauth].js";
@@ -38,10 +38,10 @@ export default async function handler(req, res) {
 		}
 
 		const user_session = await getServerSession(req, res, authOptions);
-		if (!user_session){
+		/*if (!user_session){
 			res.status(401).json({error_msg: "You are not authorized!"});
 			return;
-		}
+		}*/
 		
 		const con = await getConnection();
 		if (con == null){
@@ -49,9 +49,14 @@ export default async function handler(req, res) {
 			return;
 		}
 
-		const user = await getEmailUser(user_session, con);
-		if (user == null || user.id == undefined){
+		const user = user_session ? await getEmailUser(user_session, con) : null;
+		/*if (user == null || user.id == undefined){
 			res.status(401).json({error_msg: "You must make an account first!"});
+			con.end();
+			return;
+		}*/
+		if (user != null && user.id == undefined){
+			res.status(500).json({error_msg: "Could not find this account"});
 			con.end();
 			return;
 		}
@@ -68,8 +73,16 @@ export default async function handler(req, res) {
 		try {
 
 			var free = false;
-			var free_count = user.free_images;
+			var free_count = user == null ? 0 : user.free_images;
 			var session = null;
+
+			const [id_res] = await con.execute("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA='" + process.env.DB_NAME + "' AND TABLE_NAME='orders'");
+        	const id = id_res[0]["AUTO_INCREMENT"];
+			const pid = getNewId(id);
+
+			await con.execute("INSERT INTO orders (owner, pid, order_status, theme_id, order_timestamp, qr_url, size) VALUES (?, ?, ?, ?, ?, ?, ?)", [
+				user == null ? null : user.id, pid, free ? 2 : 1, theme.id, Math.trunc((new Date()).getTime()/1000), data.url_text, data.size
+			]);
 
 			if (free_count > 0){
 
@@ -88,20 +101,20 @@ export default async function handler(req, res) {
 					],
 					payment_method_types: ['card'],
 					mode: 'payment',
-					success_url: `${req.headers.origin}/${theme.slug}?success=true&awaiting_images=true&session_id={CHECKOUT_SESSION_ID}`,
+					success_url: `${req.headers.origin}/${theme.slug}?success=true&awaiting_images=true&order_id=${pid}&session_id={CHECKOUT_SESSION_ID}`,
 					cancel_url: `${req.headers.origin}/${theme.slug}`,
 				};
-				if (user.email != undefined) params['customer_email'] = user.email;
+				//if (user.email != undefined) params['customer_email'] = user.email;
 
 				session = await stripe.checkout.sessions.create(params);
 			}
 
-			await con.execute("INSERT INTO orders (owner, order_status, theme_id, order_timestamp, qr_url, stripe_id, size) VALUES (?, ?, ?, ?, ?, ?, ?)", [
-				user.id, free ? 2 : 1, theme.id, Math.trunc((new Date()).getTime()/1000), data.url_text, free ? null : session.id, data.size
+			await con.execute("UPDATE orders SET order_timestamp = ?, stripe_id = ? WHERE id = ?", [
+				Math.trunc((new Date()).getTime()/1000), session.id, id
 			]);
 			con.end();
 
-			res.status(303).json({status: "Success", redirect_url: free ? null : session.url, free});
+			res.status(303).json({status: "Success", redirect_url: free ? null : session.url, free, pid});
 			//res.redirect(303, session.url);
 		} catch (err) {
 			console.error(err);

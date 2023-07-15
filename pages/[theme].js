@@ -6,7 +6,7 @@ import Image from "next/image";
 import { loadStripe } from '@stripe/stripe-js';
 import Error404 from "comps/Error404.js";
 import {shuffleArray, getConnection, mysqlQuery } from "lib/utils.ts";
-import { relatedThemes, getThemeSlug, getOrders } from "lib/theme_utils";
+import { relatedThemes, getThemeSlug, getOrders, getOrder } from "lib/theme_utils";
 import ErrorPage from "comps/ErrorPage";
 import { useState, useEffect } from "react";
 import { getServerSession } from "next-auth";
@@ -53,6 +53,11 @@ export async function getServerSideProps(context){
 
             orders = await getOrders(con, user.id, themedata.id);
 
+        } else if (context.query.order_id != undefined){
+            const order = await getOrder(con, context.query.order_id);
+            if (order != null && order.theme_id == themedata.id){
+                orders = [order];
+            }
         }
 
         con.end();
@@ -75,7 +80,7 @@ export default function ThemePreview({context, user, orders}){
     const large_price = 6.99;
 
     const router = useRouter();
-	const { payment_success, payment_cancelled, awaiting_images } = router.query;
+	const { payment_success, awaiting_images } = router.query;
 
     useEffect(() => {
         if (context == undefined) return;
@@ -185,7 +190,7 @@ export default function ThemePreview({context, user, orders}){
                         <div><b>{theme.name}</b></div>
                         <div className={styles.theme_description}>{theme.description}</div>
                         <hr></hr>
-                        <input maxLength="60" id="url-input" className={styles.input} placeholder="QR Code URL"></input>
+                        <input maxLength="60" id="url-input" className={styles.input} placeholder="Enter your URL"></input>
                         {qr_url_error != null && (<div style={{fontSize: "14pt", color: "#f43131"}}>{qr_url_error}</div>)}
                         <div className={styles.flexbox + " " + styles.multiselect_container}>
                             <div className={size == 0 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(0)}}>Small</div>
@@ -202,24 +207,21 @@ export default function ThemePreview({context, user, orders}){
                             <div>Guaranteed Scannability</div>
                         </div>
                         <div style={{position: "absolute", width: "100%", left: "5%", bottom: "15px"}}>
-                            {user == null ? (<div style={{color: "#838383", fontSize: "14pt", width: "85%", marginBottom: "6px"}}>You must be logged in to create a QR Code</div>) :
-                            (
-                                <div className={styles.pricebar}>
-                                    <div style={{fontSize: "18pt"}}>
-                                        <b>Total:</b>
-                                    </div>
-                                    <div style={{fontSize: "14pt", paddingTop: "2px"}}>
-                                        <div>
-                                            <span style={{textDecoration: has_free ? "line-through" : "inherit"}}>{"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}</span>
-                                            {has_free && (<span style={{color: "#09fa21"}}> FREE</span>)}
-                                        </div>
+                            <div className={styles.pricebar}>
+                                <div style={{fontSize: "18pt"}}>
+                                    <b>Total:</b>
+                                </div>
+                                <div style={{fontSize: "14pt", paddingTop: "2px"}}>
+                                    <div>
+                                        <span style={{textDecoration: has_free ? "line-through" : "inherit"}}>{"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}</span>
+                                        {has_free && (<span style={{color: "#09fa21"}}> FREE</span>)}
                                     </div>
                                 </div>
-                            )}
-                            <div onClick={() => {user == null ? signIn() : createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
+                            </div>
+                            <div onClick={() => {createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
                                 {response_spin ? (
                                     <Image src="/loading.gif" height="24" width="24" alt="Waiting..."></Image>
-                                ) : (<span>{user == null ? "Sign In" : "Generate"}</span>)}
+                                ) : (<span>Generate</span>)}
                             </div>
                             <div style={{textAlign: "center", width: "90%"}}>
                                 {submit_error != null && (<span style={{color: "#f43131", fontSize: "14pt"}}>{submit_error}</span>)}
