@@ -37,6 +37,8 @@ export default function PageContainer({title, description, user, children}){
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="description" content={desc}></meta>
                 <meta name="og:image" content="/logo.png"></meta>
+                <script async src="https://www.googletagmanager.com/gtag/js?id=G-WBCYFDKWT3"></script>
+                <script>{"window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-WBCYFDKWT3');"}</script>
             </Head>
             <div className={styles.bg}>
             </div>
