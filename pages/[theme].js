@@ -12,11 +12,11 @@ import { useState, useEffect } from "react";
 import { getServerSession } from "next-auth";
 import { getEmailUser } from "lib/auth_utils";
 import { useRouter } from "next/router";
-import {signIn} from "next-auth/react";
 import { authOptions } from "pages/api/auth/[...nextauth].js";
 import ThemeIcon from "comps/ThemeIcon";
 import OrderResult from "comps/OrderResult";
 import { useRef } from "react";
+import HoverHelp from "comps/HoverHelp.js";
 
 loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -198,12 +198,26 @@ export default function ThemePreview({context, user, orders}){
                             <div className={size == 2 ? styles.multiselect_selected : styles.multiselect_option} onClick={() => {setSize(2)}}>XL</div>
                         </div>
                         <div style={{color: "#a1a1a1", fontSize: "14pt", marginTop: "10px", marginBottom: "150px"}}>
-                            {size == 0 && (<><div>10 Images, $0.30 Each</div>
-                                <div>512x512 Pixels</div></>)}
-                            {size == 1 && (<><div>10 Images, $0.60 Each</div>
-                            <div>2048x2048 Pixels</div></>)}
-                            {size == 2 && (<><div>10 Images, $0.70 Each</div>
-                            <div>4096x4096 Pixels</div></>)}
+                            <div style={{display: "flex"}}>
+                                {size == 0 && (<><div>10 Images, $0.30 Each</div></>)}
+                                {size == 1 && (<><div>10 Images, $0.60 Each</div></>)}
+                                {size == 2 && (<><div>10 Images, $0.70 Each</div></>)}
+                                <HoverHelp text="The AI generates 10 images so you can pick the best one."></HoverHelp>
+                            </div>
+                            <div>
+                                {size == 0 && (<><div style={{display: "flex"}}>
+                                    <span>512x512 Pixels</span>
+                                    <HoverHelp text="Best for small icons"></HoverHelp>
+                                </div></>)}
+                                {size == 1 && (<><div style={{display: "flex"}}>
+                                    <span>2048x2048 Pixels</span>
+                                    <HoverHelp text="Best for general purpose"></HoverHelp>
+                                </div></>)}
+                                {size == 2 && (<><div style={{display: "flex"}}>
+                                    <span>4096x4096 Pixels</span>
+                                    <HoverHelp text="Highest resolution, best for print advertising or large signs"></HoverHelp>
+                                </div></>)}
+                            </div>
                             <div>Guaranteed Scannability</div>
                         </div>
                         <div style={{position: "absolute", width: "100%", left: "5%", bottom: "15px"}}>
