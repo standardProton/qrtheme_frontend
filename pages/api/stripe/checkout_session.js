@@ -72,23 +72,20 @@ export default async function handler(req, res) {
 
 		try {
 
-			var free = false;
 			var free_count = user == null ? 0 : user.free_images;
 			var session = null;
 
 			const [id_res] = await con.execute("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA='" + process.env.DB_NAME + "' AND TABLE_NAME='orders'");
         	const id = id_res[0]["AUTO_INCREMENT"];
 			const pid = getNewId(id);
-
+			
 			await con.execute("INSERT INTO orders (owner, pid, order_status, theme_id, order_timestamp, qr_url, size) VALUES (?, ?, ?, ?, ?, ?, ?)", [
-				user == null ? null : user.id, pid, free ? 2 : 1, theme.id, Math.trunc((new Date()).getTime()/1000), data.url_text, data.size
+				user == null ? null : user.id, pid, free_count > 0 ? 2 : 1, theme.id, Math.trunc((new Date()).getTime()/1000), data.url_text, data.size
 			]);
 
 			if (free_count > 0){
 
 				await con.execute("UPDATE accounts SET free_images = ? WHERE id = ?", [free_count > 1 ? free_count-1 : null, user.id]);
-
-				free = true;
 
 			} else {
 
@@ -109,12 +106,14 @@ export default async function handler(req, res) {
 				session = await stripe.checkout.sessions.create(params);
 			}
 
-			await con.execute("UPDATE orders SET order_timestamp = ?, stripe_id = ? WHERE id = ?", [
-				Math.trunc((new Date()).getTime()/1000), session.id, id
-			]);
-			con.end();
+			if (session != null){
+				await con.execute("UPDATE orders SET order_timestamp = ?, stripe_id = ? WHERE id = ?", [
+					Math.trunc((new Date()).getTime()/1000), session.id, id
+				]);
+				con.end();
+			}
 
-			res.status(303).json({status: "Success", redirect_url: free ? null : session.url, free, pid});
+			res.status(303).json({status: "Success", redirect_url: free_count > 0 ? null : session.url, free: free_count > 0, pid});
 			//res.redirect(303, session.url);
 		} catch (err) {
 			console.error(err);

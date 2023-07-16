@@ -157,10 +157,18 @@ export default function ThemePreview({context, user, orders}){
         });        
 
         const j = await res.json();
-        setAwaitingResponse(false);
-        if (j.error_msg != undefined) setSubmitError(j.error_msg);
+
+        if (j.error_msg != undefined) {
+            setSubmitError(j.error_msg);
+            setAwaitingResponse(false);
+        }
         else if (j.redirect_url) router.push(j.redirect_url);
-        else router.push("/" + context.theme.slug + "?awaiting_images=true");
+        else {
+            router.push("/" + context.theme.slug + "?awaiting_images=true");
+            setAwaitingResponse(false);
+        }
+
+
     }
 
     if (context == undefined) return (<></>); //TODO
