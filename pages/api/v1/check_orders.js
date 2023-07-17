@@ -2,7 +2,6 @@
 import { getServerSession } from "next-auth";
 import { getEmailUser } from "lib/auth_utils";
 import { getConnection, mysqlQuery } from "lib/utils";
-import { getOrders } from "lib/theme_utils";
 import authOptions from "pages/api/auth/[...nextauth].js";
 
 export default async function handler(req, res){
@@ -13,10 +12,10 @@ export default async function handler(req, res){
     }
 
     const session = await getServerSession(req, res, authOptions);
-    if (!session){
+    /*if (!session){
         res.status(401).json({error_msg: "You are not authorized!"});
         return;
-    }
+    }*/
 
     const con = await getConnection();
     if (con == null){
@@ -24,12 +23,12 @@ export default async function handler(req, res){
         return;
     }
 
-    const user = await getEmailUser(session, con);
-    if (user == null || user.id == undefined){
+    const user = session == null ? null : await getEmailUser(session, con);
+    /*if (user == null || user.id == undefined){
         res.status(401).json({error_msg: "You must make an account first!"});
         con.end();
         return;
-    }
+    }*/
 
     const res1 = await mysqlQuery(con, "SELECT owner, output FROM orders WHERE id = ?", [req.query.order_id]);
     if (res1.error_msg != null){
@@ -44,7 +43,7 @@ export default async function handler(req, res){
         return;
     }
     const order = res1.results[0];
-    if (order.owner != user.id){
+    if (order.owner != null && (user == null || order.owner != user.id)){
         res.status(401).json({error_msg: "You do not own this order!"});
         con.end();
         return;

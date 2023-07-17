@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         return;
     }
 
-    if (body.pw != "jTnekDBnwiqp$ejfd5@a") {
+    if (body.pw != "jTnekDBnwiqp$ejfd5@a" || true) { 
         res.status(401).json({error_msg: "Incorrect", query: body});
         return;
     }

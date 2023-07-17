@@ -13,6 +13,17 @@ export function getId(pid: string){
     return parseInt(pid.substring(pid.length - fn, pid.length));
 }
 
+export function getCookie(name: string, cookie: string){
+    const cookie_split = cookie.split(";");
+    for (let i = 0; i < cookie_split.length; i++){
+        const ns = cookie_split[i].split("=");
+        if (ns.length == 2 && ns[0].trim() == name && ns[1].length > 0 && ns[1] != "null"){
+            return ns[1];
+        }
+    }
+    return null;
+}
+
 export async function getConnection(){
 
     return new Promise(async (resolve, reject) => {
@@ -117,9 +128,26 @@ export function encrypt(s: string, iv: Buffer): string {
     return iv.toString("base64") + cipher.update(s, "utf-8", "base64") + cipher.final("base64");
 }
 
+export function encryptCookie(s: string): string {
+    if (typeof s != "string") return "null";
+    //@ts-ignore
+    const iv = Buffer.from(process.env.CONST_IV, "hex");
+    //@ts-ignore
+    const key = Buffer.from(process.env.ENCRYPT_KEY2, "hex");
+    const cipher = createCipheriv("aes-256-cbc", key, iv);
+    return iv.toString("base64") + cipher.update(s, "utf-8", "base64") + cipher.final("base64");
+}
+
 export function decrypt(s: string){
     //@ts-ignore
     const key = Buffer.from(process.env.ENCRYPT_KEY1, "hex");
+    const decipher = createDecipheriv("aes-256-cbc", key, Buffer.from(s.substring(0, 24), "base64"));
+    return decipher.update(s.substring(24, s.length), "base64", "utf-8") + decipher.final();
+}
+
+export function decryptCookie(s: string){
+    //@ts-ignore
+    const key = Buffer.from(process.env.ENCRYPT_KEY2, "hex");
     const decipher = createDecipheriv("aes-256-cbc", key, Buffer.from(s.substring(0, 24), "base64"));
     return decipher.update(s.substring(24, s.length), "base64", "utf-8") + decipher.final();
 }

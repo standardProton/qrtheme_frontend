@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { loadStripe } from '@stripe/stripe-js';
 import Error404 from "comps/Error404.js";
-import {shuffleArray, getConnection, mysqlQuery } from "lib/utils.ts";
+import {shuffleArray, getConnection, mysqlQuery, getCookie } from "lib/utils.ts";
 import { relatedThemes, getThemeSlug, getOrders, getOrder } from "lib/theme_utils";
 import ErrorPage from "comps/ErrorPage";
 import { useState, useEffect } from "react";
@@ -53,17 +53,28 @@ export async function getServerSideProps(context){
 
             orders = await getOrders(con, user.id, themedata.id);
 
-        } else if (context.query.order_id != undefined){
-            const order = await getOrder(con, context.query.order_id);
-            if (order != null && order.theme_id == themedata.id){
-                orders = [order];
+        } else {
+            let order_id = null;
+            if (context.query.order_id != undefined) order_id = context.query.order_id;
+            else if (context.req.cookies.qrtheme_orders != undefined){
+                try{
+                    const order_json = await JSON.parse(context.req.cookies.qrtheme_orders);
+                    if (order_json[themedata.slug] != undefined) order_id = "" + parseInt(order_json[themedata.slug]); //pid
+                } catch {}
+            }
+
+            if (order_id != null){
+                const order = await getOrder(con, order_id);
+                if (order != null && order.theme_id == themedata.id){
+                    orders = [order];
+                }
             }
         }
 
         con.end();
     }
     
-    return {props: {context: {theme: themedata, related_themes}, user, orders}}
+    return {props: {context: {theme: themedata, related_themes, analytics: !process.env.DEV_ENV}, user, orders}}
 }
 
 export default function ThemePreview({context, user, orders}){
@@ -92,6 +103,7 @@ export default function ThemePreview({context, user, orders}){
 
         if (!page_setup){
             setPageSetup(true);
+
             const url_input = document.getElementById("url-input");
             if (url_input != null){
                 url_input.addEventListener("input", () => {
@@ -102,10 +114,6 @@ export default function ThemePreview({context, user, orders}){
                         setQRError(null);
                     }
                 })
-            }
-
-            if (payment_success){
-                alert("Order placed!");
             }
 
             //const qr = document.getElementById("qr-preview");
@@ -119,6 +127,22 @@ export default function ThemePreview({context, user, orders}){
         resize();
 
     }, [page_setup])
+
+    async function updateCookie(){
+        if (orders != undefined && context != undefined && orders.length > 0){
+            let order_cookie = getCookie("qrtheme_orders", document.cookie);
+            if (order_cookie == null || order_cookie == "null") order_cookie = "{}";
+            if (order_cookie.length > 0){
+                const order_json = await JSON.parse(order_cookie);
+                order_json[context.theme.slug] = orders[0].order_pid;
+                document.cookie = "qrtheme_orders=" + JSON.stringify(order_json);
+            }
+        }
+    }
+
+    useEffect(() => {
+        updateCookie()
+    });
     
     const order_wait = useRef();
 
@@ -147,6 +171,8 @@ export default function ThemePreview({context, user, orders}){
 
         setAwaitingResponse(true);
 
+        console.log("Send request");
+
         const res = await fetch("/api/stripe/checkout_session", {
             method: "POST",
             body: JSON.stringify({
@@ -155,6 +181,8 @@ export default function ThemePreview({context, user, orders}){
                 url_text: url_input,
             })
         });        
+
+        console.log("Response");
 
         const j = await res.json();
 
@@ -183,7 +211,7 @@ export default function ThemePreview({context, user, orders}){
     const related_themes = context.related_themes;
 
     return (
-        <PageLayout title={theme.name + " QR Codes | Generate AI QR Codes | QR Theme"} user={user}>
+        <PageLayout title={theme.name + " QR Codes | Generate AI QR Codes | QR Theme"} user={user} analytics={context.analytics}>
             <center>
                 <div className={styles.flexbox} style={{width: "100%", height: "100%"}}>
                     <div className={styles.rounded_box + " " + styles.main_panel}>

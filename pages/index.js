@@ -10,17 +10,15 @@ import ThemeIcon from "comps/ThemeIcon";
 
 import { useState, useEffect } from "react";
 
-/*export function getServerSideProps(context){
+export function getServerSideProps(context){
     return {
         props: {
-            recommended_themes:[
-                {text: "Theme 1", slug: "theme1"}
-            ]
+            analytics: !process.env.DEV_ENV
         }
     }
-}*/
+}
 
-export default function Index(){
+export default function Index({analytics}){
 
     useEffect(() => {
         if (typeof window == "undefined") return;
@@ -47,8 +45,8 @@ export default function Index(){
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="description" content="Get a unique AI QR Code for your business, event, profile, and more! Stand out to customers with a Scannable AI QR code."></meta>
                 <meta name="og:image" content="/logo.png"></meta>
-                <script async src="https://www.googletagmanager.com/gtag/js?id=G-WBCYFDKWT3"></script>
-                <script>{"window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-WBCYFDKWT3');"}</script>
+                {analytics && (<><script async src="https://www.googletagmanager.com/gtag/js?id=G-WBCYFDKWT3"></script>
+                <script>{"window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-WBCYFDKWT3');"}</script></>)}
             </Head>
             <div className={styles.bg}></div>
             <div id="content">
