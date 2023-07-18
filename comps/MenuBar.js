@@ -29,7 +29,7 @@ export default function MenuBar({mobile, user}){
                     <div className={styles.header_mobile_menu}>
                         {menulinks.map(linkdata => {
                             var action = () => {}
-                            if (linkdata.action == 1) action = signIn;
+                            if (linkdata.action == 1) action = () => signIn('google')
                             else if (linkdata.action == 2) action = signOut;
 
                             if (linkdata.action > 0){
@@ -67,7 +67,7 @@ export default function MenuBar({mobile, user}){
                             <>
                                 {menulinks.map(linkdata => {
                                     var action = () => {}
-                                    if (linkdata.action == 1) action = signIn;
+                                    if (linkdata.action == 1) action = () => signIn('google');
                                     else if (linkdata.action == 2) action = signOut;
 
                                     if (linkdata.action > 0){

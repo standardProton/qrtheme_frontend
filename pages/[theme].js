@@ -17,6 +17,7 @@ import ThemeIcon from "comps/ThemeIcon";
 import OrderResult from "comps/OrderResult";
 import { useRef } from "react";
 import HoverHelp from "comps/HoverHelp.js";
+import { signIn } from "next-auth/react";
 
 loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -42,6 +43,7 @@ export async function getServerSideProps(context){
     const related_themes = shuffleArray(themes).slice(0, 8);
 
     const con = await getConnection();
+
     //if (con == null) return {props: {context: {error404: false, error_msg: "Could not connect to the server!"}}}
     
     var user = null;
@@ -171,8 +173,6 @@ export default function ThemePreview({context, user, orders}){
 
         setAwaitingResponse(true);
 
-        console.log("Send request");
-
         const res = await fetch("/api/stripe/checkout_session", {
             method: "POST",
             body: JSON.stringify({
@@ -181,8 +181,6 @@ export default function ThemePreview({context, user, orders}){
                 url_text: url_input,
             })
         });        
-
-        console.log("Response");
 
         const j = await res.json();
 
@@ -279,6 +277,7 @@ export default function ThemePreview({context, user, orders}){
                             <div style={{textAlign: "center", width: "90%", marginTop: "5px"}}>
                                 {(has_free && user.free_images == 1) && (<span style={{color: "#a1a1a1"}}>Make your first QR Code for free!</span>)}
                                 {(has_free && user.free_images > 1) && (<span style={{color: "#a1a1a1"}}>You have <b>{user.free_images}</b> free QR Code{user.free_images == 1?"":"s"} remaining!</span>)}
+                                {(user == null) && (<span onClick={() => signIn('google')} style={{color: "#a1a1a1", fontSize: "14pt", cursor: "pointer"}}>Sign in to save your orders!</span>)}
                             </div>
                         </div>
                         
