@@ -87,6 +87,7 @@ export default function ThemePreview({context, user, orders}){
     const [page_setup, setPageSetup] = useState(false);
     const [image_size, setImageSize] = useState(100);
     const [response_spin, setAwaitingResponse] = useState(false);
+    const [with_watermark, setWithWatermark] = useState(false);
 
     const small_price = 2.99;
     const med_price = 5.99;
@@ -106,6 +107,11 @@ export default function ThemePreview({context, user, orders}){
         if (!page_setup){
             setPageSetup(true);
 
+            if (user == null){
+                const checkmark = document.getElementById("remove-watermark");
+                checkmark.checked = false;
+                setWithWatermark(true);
+            }
             const url_input = document.getElementById("url-input");
             if (url_input != null){
                 url_input.addEventListener("input", () => {
@@ -172,6 +178,7 @@ export default function ThemePreview({context, user, orders}){
         }
 
         setAwaitingResponse(true);
+        setSubmitError(null);
 
         const res = await fetch("/api/stripe/checkout_session", {
             method: "POST",
@@ -179,6 +186,7 @@ export default function ThemePreview({context, user, orders}){
                 theme_slug: context.theme.slug,
                 size,
                 url_text: url_input,
+                with_watermark
             })
         });        
 
@@ -252,7 +260,17 @@ export default function ThemePreview({context, user, orders}){
                                     <HoverHelp text="Highest resolution, best for print advertising or large signs"></HoverHelp>
                                 </div></>)}
                             </div>
-                            <div>Guaranteed Scannability</div>
+                            <div style={{display: "flex"}}>
+                                <span>Guaranteed Scannability</span>
+                                <HoverHelp text="The images you receive will always scan correctly."></HoverHelp>
+                            </div>
+                            <div style={{display: "flex"}}>
+                                <input defaultChecked="true" id="remove-watermark" type="checkbox" style={{height: "18px", width: "18px", marginLeft: "0", marginRight: "5px"}} onClick={() => {
+                                    setWithWatermark(!document.getElementById("remove-watermark").checked);
+                                }}></input>
+                                <label>Remove Watermark</label>
+                                <HoverHelp text="You can generate free images with the QR-Theme logo in the corner."></HoverHelp>
+                            </div>
                         </div>
                         <div style={{position: "absolute", width: "100%", left: "5%", bottom: "15px"}}>
                             <div className={styles.pricebar}>
@@ -261,16 +279,19 @@ export default function ThemePreview({context, user, orders}){
                                 </div>
                                 <div style={{fontSize: "14pt", paddingTop: "2px"}}>
                                     <div>
-                                        <span style={{textDecoration: has_free ? "line-through" : "inherit"}}>{"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}</span>
-                                        {has_free && (<span style={{color: "#09fa21"}}> FREE</span>)}
+                                        <span style={{textDecoration: (has_free || with_watermark) ? "line-through" : "inherit"}}>{"USD $" + (size < 2 ? (size == 0 ? small_price : med_price) : large_price)}</span>
+                                        {(has_free || with_watermark) && (<span style={{color: "#09fa21"}}> FREE</span>)}
                                     </div>
                                 </div>
                             </div>
-                            <div onClick={() => {createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
+                            {user == null ? (<div onClick={() => {signIn('google')}} className={styles.styled_button + " " + styles.blue_button}>
+                                <span>Sign In</span>
+                            </div>) :
+                            (<div onClick={() => {createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
                                 {response_spin ? (
                                     <Image src="/loading.gif" height="24" width="24" alt="Waiting..."></Image>
                                 ) : (<span>Generate</span>)}
-                            </div>
+                            </div>)}
                             <div style={{textAlign: "center", width: "90%"}}>
                                 {submit_error != null && (<span style={{color: "#f43131", fontSize: "14pt"}}>{submit_error}</span>)}
                             </div>
