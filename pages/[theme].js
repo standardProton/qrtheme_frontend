@@ -195,6 +195,7 @@ export default function ThemePreview({context, user, orders}){
         if (j.error_msg != undefined) {
             setSubmitError(j.error_msg);
             setAwaitingResponse(false);
+            //
         }
         else if (j.redirect_url) router.push(j.redirect_url);
         else {
