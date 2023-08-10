@@ -265,6 +265,7 @@ export default function ThemePreview({context, user, orders}){
                                 <span>Guaranteed Scannability</span>
                                 <HoverHelp text="The images you receive will always scan correctly."></HoverHelp>
                             </div>
+                            {(!(has_free && user.free_images > 1)) && (
                             <div style={{display: "flex"}}>
                                 <input defaultChecked="true" id="remove-watermark" type="checkbox" style={{height: "18px", width: "18px", marginLeft: "0", marginRight: "5px"}} onClick={() => {
                                     setWithWatermark(!document.getElementById("remove-watermark").checked);
@@ -272,8 +273,13 @@ export default function ThemePreview({context, user, orders}){
                                 <label>Remove Watermark</label>
                                 <HoverHelp text="You can generate free images with the QR-Theme logo in the corner."></HoverHelp>
                             </div>
+                            )}
                         </div>
                         <div style={{position: "absolute", width: "100%", left: "5%", bottom: "15px"}}>
+                            {user == null ? (<div onClick={() => {signIn('google')}} className={styles.styled_button + " " + styles.blue_button}>
+                                <span>Sign In</span>
+                            </div>) :
+                            (<>
                             <div className={styles.pricebar}>
                                 <div style={{fontSize: "18pt"}}>
                                     <b>Total:</b>
@@ -285,14 +291,12 @@ export default function ThemePreview({context, user, orders}){
                                     </div>
                                 </div>
                             </div>
-                            {user == null ? (<div onClick={() => {signIn('google')}} className={styles.styled_button + " " + styles.blue_button}>
-                                <span>Sign In</span>
-                            </div>) :
-                            (<div onClick={() => {createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
+                            <div onClick={() => {createOrder(user)}}className={styles.styled_button + " " + styles.blue_button}>
                                 {response_spin ? (
                                     <Image src="/loading.gif" height="24" width="24" alt="Waiting..."></Image>
                                 ) : (<span>Generate</span>)}
-                            </div>)}
+                            </div>
+                            </>)}
                             <div style={{textAlign: "center", width: "90%"}}>
                                 {submit_error != null && (<span style={{color: "#f43131", fontSize: "14pt"}}>{submit_error}</span>)}
                             </div>
