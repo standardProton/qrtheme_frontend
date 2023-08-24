@@ -109,7 +109,7 @@ export default function ThemePreview({context, user, orders}){
 
             if (user == null){
                 const checkmark = document.getElementById("remove-watermark");
-                checkmark.checked = false;
+                if (checkmark != null) checkmark.checked = false;
                 setWithWatermark(true);
             }
             const url_input = document.getElementById("url-input");
