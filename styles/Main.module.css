@@ -268,6 +268,22 @@
     background-color: #46444e;
 }
 
+.loading_bar_container{
+    width: 90%;
+    display: flex;
+    flex-wrap: nowrap;
+    border: 2px solid #FEFEFE;
+    border-radius: 4px;
+    height: 23px;
+    margin: 5px;
+}
+
+.loading_bar_filled{
+    background-color: #FEFEFE;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
 @media (max-width: 1075px){
     .main_panel{
         width: 100%;

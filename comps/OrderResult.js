@@ -3,11 +3,13 @@ import { useState, useEffect } from "react";
 import Image from "next/image.js";
 import Link from "next/link.js";
 import ImageScroll from "./ImageScroll";
+import LoadingBar from "./LoadingBar";
 
 export default function OrderResult({order, past_order, size}){
     const [hidden, setHidden] = useState(past_order);
     const [view_index, setViewIndex] = useState(-1);
     const [src_list, setSourceList] = useState([]);
+    const [loading_percent, setLoadingPercent] = useState(null);
 
     const url_base = "https://qr-theme-image.s3.us-east-2.amazonaws.com/";
     const name_prefix = "QR_Theme_";
@@ -17,7 +19,7 @@ export default function OrderResult({order, past_order, size}){
     if (size > 400) size = 5*size/6.0;
 
     useEffect(() => {
-
+        let started_loading_bar = false;
         const newsrc_list = [];
         for (let j = 0; j < order.images.length; j++) newsrc_list.push(url_base + "order-" + id + "/" + name_prefix + order.images[j] + ".jpg");
         setSourceList(newsrc_list);
@@ -38,6 +40,30 @@ export default function OrderResult({order, past_order, size}){
                         const images = order_ref.output.split(" ").filter(name => name.length > 0);
                         for (let j = 0; j < images.length; j++) refreshed_src.push(url_base + "order-" + id + "/" + name_prefix + images[j] + ".jpg");
                         setSourceList(refreshed_src);
+
+                        if (!started_loading_bar && order_ref.start_time != null && refreshed_src.length == 0 && loading_percent == null) {
+                            const duration = 45.0, framerate = 30; //fps
+                            const increment = 100.0/(framerate*duration);
+                            const seconds = ((new Date()).getTime()/1000) - order_ref.start_time;
+                            if (seconds > duration) {
+                                setLoadingPercent(100);
+                                return;
+                            }
+
+                            let at = (seconds/duration)*100; //percent completed
+                            setLoadingPercent(at);
+                            started_loading_bar = true;
+                            
+                            const bar_id = setInterval(() => {
+                                at += increment;
+                                if (at >= 100) {
+                                    clearInterval(bar_id);
+                                    setLoadingPercent(100);
+                                    return;
+                                }
+                                setLoadingPercent(at);
+                            }, 1000/framerate);
+                        }
                         if (refreshed_src.length >= 10) updating = false;
 
                     }
@@ -78,8 +104,10 @@ export default function OrderResult({order, past_order, size}){
                     <div>
                         <center>
                             <div style={{margin: "10px"}}><span>{"Generating " + (10 - src_list.length) + 
-                            (src_list.length > 0 ? " More" : "") + " Image" + (src_list.length == 9 ? "" : "s") + "..."}</span></div>
-                            <Image src="/loading.gif" height="40" width="40" alt="Loading"></Image>
+                            " Image" + (src_list.length == 9 ? "" : "s") + "..."}</span></div>
+                            {(src_list.length > 0 || loading_percent == null) ? 
+                            (<Image src="/loading.gif" height="40" width="40" alt="Loading"></Image>) : 
+                            (<LoadingBar percentage={loading_percent}></LoadingBar>)}
                         </center>
                     </div>
                 )}

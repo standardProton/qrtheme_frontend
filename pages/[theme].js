@@ -18,6 +18,7 @@ import OrderResult from "comps/OrderResult";
 import { useRef } from "react";
 import HoverHelp from "comps/HoverHelp.js";
 import { signIn } from "next-auth/react";
+import LoadingBar from "comps/LoadingBar";
 
 loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 

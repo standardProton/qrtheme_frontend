@@ -30,7 +30,7 @@ export default async function handler(req, res){
         return;
     }*/
 
-    const res1 = await mysqlQuery(con, "SELECT owner, output FROM orders WHERE id = ?", [req.query.order_id]);
+    const res1 = await mysqlQuery(con, "SELECT owner, output, start_time FROM orders WHERE id = ?", [req.query.order_id]);
     if (res1.error_msg != null){
         res.status(500).json({error_msg: res1.error_msg});
         con.end();
