@@ -42,7 +42,7 @@ export default function OrderResult({order, past_order, size}){
                         setSourceList(refreshed_src);
 
                         if (!started_loading_bar && order_ref.start_time != null && refreshed_src.length == 0 && loading_percent == null) {
-                            const duration = 45.0, framerate = 30; //fps
+                            const duration = 60.0, framerate = 30; //fps
                             const increment = 100.0/(framerate*duration);
                             const seconds = ((new Date()).getTime()/1000) - order_ref.start_time;
                             if (seconds > duration) {
