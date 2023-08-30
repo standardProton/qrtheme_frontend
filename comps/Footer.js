@@ -6,7 +6,7 @@ export default function Footer(){
     const links =[
         {text: "Explore", href: "/themes"},
         {text: "Terms & Privacy", href: "/terms"},
-        {text: "Contact", href: "mailto:qrtheme@gmail.com"},
+        {text: "Contact", href: "mailto:support@qr-theme.com"},
         {text: "Suggest a Theme!", href: "https://forms.gle/V7PS5gCGoheN5p2x7"}
     ]
     return(
