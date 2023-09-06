@@ -24,7 +24,7 @@ export default function Index({analytics}){
         if (typeof window == "undefined") return;
 
         var b1 = document.getElementById("banner-1")
-        if (b1 != null) b1.style.backgroundPosition = "center -544px";
+        if (b1 != null) b1.style.backgroundPosition = "center -544px"; //center -544px
 
         document.body.onscroll = function myFunction() {  
             var scrolltotop = document.scrollingElement.scrollTop;
@@ -32,7 +32,7 @@ export default function Index({analytics}){
             var target = document.getElementById("banner-1");
             if (target == null) return;
             var target2 = document.getElementById("banner-0");
-            target.style.backgroundPosition = "center " + (yvalue - 544) + "px"; //img height=1088px
+            target.style.backgroundPosition = "center " + (yvalue - 564 + (window.innerWidth < 750 ? 500 : 0)) + "px"; //img height=1088px, // - 544
             target2.style.backgroundPosition = (-yvalue*0.25) + "px " + yvalue + "px";
         }
     })
@@ -78,10 +78,10 @@ export default function Index({analytics}){
                         <div className={pagestyles.small_banner} id="banner-1" style={{height: "139px", backgroundImage: "url(\"/orange_bg_large.jpg\")"}}></div>
                         <div className={pagestyles.small_banner_container}>
                             <div className={styles.hide_on_mobile}>
-                                <Image src="/get_seen_text.png" width="630" height="108" alt="Get Seen with AI-Generated QR Codes"></Image>
+                                <Image src="/get_seen_text.png" width="630" height="108" alt="Stand out with AI-Generated QR Codes"></Image>
                             </div>
-                            <div className={styles.show_on_mobile} style={{fontSize: "15pt"}}>
-                                <h2>Get Seen with AI-Generated QR Codes</h2>
+                            <div className={styles.show_on_mobile} style={{fontSize: "14pt"}}>
+                                <h2>Stand out with AI-Generated QR Codes</h2>
                             </div>
                         </div>
                     </div>
