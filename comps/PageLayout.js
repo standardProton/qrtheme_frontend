@@ -36,7 +36,7 @@ export default function PageContainer({title, description, user, theme_slug, ana
                 <link rel="icon" type="image/png" href="/favicon.png"></link>
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="description" content={desc}></meta>
-                {theme_slug != undefined && (<meta name="og:image" content={"/themes/thumbnails/" + theme_slug + ".png"}></meta>)}
+                {theme_slug != undefined && (<meta name="og:image" content={"/thumbnails/" + theme_slug + ".png"}></meta>)}
                 {analytics && (<><script async src="https://www.googletagmanager.com/gtag/js?id=G-WBCYFDKWT3"></script>
                 <script>{"window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-WBCYFDKWT3');"}</script></>)}
             </Head>
