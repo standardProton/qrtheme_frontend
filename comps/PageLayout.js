@@ -4,7 +4,7 @@ import MenuBar from "comps/MenuBar.js";
 import Head from "next/head.js";
 import Footer from "comps/Footer.js";
 
-export default function PageContainer({title, description, user, analytics, children}){
+export default function PageContainer({title, description, user, theme_slug, analytics, children}){
 
     const [menubar, setMenuBar] = useState(<MenuBar user={user} mobile={0}></MenuBar>);
     const [small_menubar, setMenuBarSize] = useState(false);
@@ -36,7 +36,7 @@ export default function PageContainer({title, description, user, analytics, chil
                 <link rel="icon" type="image/png" href="/favicon.png"></link>
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="description" content={desc}></meta>
-                <meta name="og:image" content="/logo.png"></meta>
+                <meta name="og:image" content={theme_slug == undefined ? "/logo.png" : "/themes/thumbnails/" + theme_slug + ".png"}></meta>
                 {analytics && (<><script async src="https://www.googletagmanager.com/gtag/js?id=G-WBCYFDKWT3"></script>
                 <script>{"window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-WBCYFDKWT3');"}</script></>)}
             </Head>

@@ -219,7 +219,7 @@ export default function ThemePreview({context, user, orders}){
     const related_themes = context.related_themes;
 
     return (
-        <PageLayout title={theme.name + " QR Codes | Generate AI QR Codes | QR Theme"} user={user} analytics={context.analytics}>
+        <PageLayout title={theme.name + " QR Codes | Generate AI QR Codes | QR Theme"} theme_slug={theme.slug} user={user} analytics={context.analytics}>
             <center>
                 <div className={styles.flexbox} style={{width: "100%", height: "100%"}}>
                     <div className={styles.rounded_box + " " + styles.main_panel}>
