@@ -44,7 +44,6 @@ export default function Index({analytics}){
                 <title>Make Incredible QR Code Art with AI | QR Theme</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <meta name="description" content="Get a unique AI QR Code for your business, event, profile, and more! Stand out to customers with a Scannable AI QR code."></meta>
-                <meta name="og:image" content="/logo.png"></meta>
                 {analytics && (<><script async src="https://www.googletagmanager.com/gtag/js?id=G-WBCYFDKWT3"></script>
                 <script>{"window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-WBCYFDKWT3');"}</script></>)}
             </Head>
